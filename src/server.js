@@ -14,6 +14,9 @@ const PORT = process.env.PORT || 3000;
 //   Promise.reject(new Error("💥 Unhandled rejection test"));
 // }, 1000);
 // ----------------- TEST ENDS HERE------------------------------------//
+// logger.info("Logger initialized successfully");
+// logger.warn("Warning message logged");
+// logger.error("Error message logged");
 
 app.listen(PORT, () => {
   try {
