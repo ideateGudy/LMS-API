@@ -7,7 +7,7 @@ const authLogger = logger.child({
 });
 
 // Middleware to check if the user is authenticated
-export const verifyTokenMiddleware = (req, res, next) => {
+export const authMiddleware = (req, res, next) => {
   authLogger.info("Hit Authentication Middleware");
   const token = req.headers["authorization"]?.split(" ")[1];
 
@@ -18,7 +18,7 @@ export const verifyTokenMiddleware = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.userId = decoded._id;
+    req.userId = decoded.userId;
     if (!req.userId) {
       authLogger.warn("Auth-Middleware: User not found");
       return next(new APIError("User not found", 404));
