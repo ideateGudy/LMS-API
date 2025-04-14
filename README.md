@@ -21,7 +21,10 @@ This is a modern, Learning Management System (LMS) built to empower students and
 
 ## 📁 Folder Structure
 
+### Server
+
 ```bash
+
 src/
 ├── modules/              # Feature-based modules (auth, users, courses, etc.)
 ├── middleware/           # Auth & error handling middleware
@@ -32,5 +35,7 @@ src/
 ├── server.js             # App entry point
 └ .env                  # Environment variables
 ├ package.json
-├ README.md
+
 ```
+
+### Server
