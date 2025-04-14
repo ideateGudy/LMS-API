@@ -29,7 +29,25 @@ const UserSchema = new Schema(
       default: "student",
     },
     bio: String,
-    profilePhoto: String,
+    profilePhoto: { type: String },
+    courses: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Course",
+      },
+    ],
+    notifications: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Notification",
+      },
+    ],
+    bookmarks: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Course",
+      },
+    ],
     socialLinks: [
       {
         platform: String,
