@@ -12,57 +12,41 @@ const UserSchema = new Schema(
     username: {
       type: String,
       unique: true,
+      trim: true,
+      lowercase: true,
       required: true,
     },
     email: {
       type: String,
+      trim: true,
+      lowercase: true,
       unique: true,
       required: true,
     },
     password: {
       type: String,
+      trim: true,
       required: true,
     },
     role: {
       type: String,
-      enum: ["student", "instructor", "admin", "mentor"],
+      enum: ["student", "instructor", "admin"],
       default: "student",
     },
-    bio: String,
-    profilePhoto: { type: String },
-    courses: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Course",
-      },
-    ],
-    notifications: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Notification",
-      },
-    ],
-    bookmarks: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Course",
-      },
-    ],
-    socialLinks: [
-      {
-        platform: String,
-        url: String,
-      },
-    ],
-    isVerified: {
-      type: Boolean,
-      default: false,
-    },
-    verificationToken: String,
-    resetToken: String,
+    enrolledCourses: [{ type: mongoose.Schema.Types.ObjectId, ref: "Course" }],
   },
-  { timestamps: true }
+  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
+
+UserSchema.virtual("isAdmin").get(function () {
+  return this.role === "admin";
+});
+
+UserSchema.virtual("courses", {
+  ref: "Course",
+  localField: "_id",
+  foreignField: "createdBy",
+});
 
 UserSchema.index({ username: 1, email: 1 });
 
