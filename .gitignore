@@ -1,5 +1,8 @@
 node_modules
 .env
+authPassport.controller.js
+passport-oauth20.js
+authPassport.routes.js
 
 
 
@@ -16,6 +19,8 @@ error.md
 mongoose.md
 src/logs/**
 logs/**
+generateOtp.js
+sendMail.js
 
 
 

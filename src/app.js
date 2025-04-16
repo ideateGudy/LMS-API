@@ -8,11 +8,13 @@ import morgan from "morgan";
 // import { errors } from "celebrate";
 import { globalErrorHandler } from "./middlewares/errorHandler.js";
 import { APIError } from "./utils/errorClass.js";
+import { authenticateUser } from "./middlewares/auth.middleware.js";
 
 // Import routes
 import authRoutes from "./modules/auth/auth.routes.js";
 import userRoutes from "./modules/users/user.routes.js";
-// import courseRoutes from "./modules/courses/course.routes.js"
+import courseRoutes from "./modules/courses/course.routes.js";
+import progressRoutes from "./modules/progress/progress.routes.js";
 
 //initialize express app
 const app = express();
@@ -27,8 +29,9 @@ app.use(morgan("dev"));
 
 // Mount all routes
 app.use("/api/auth", authRoutes);
-app.use("/api/users", userRoutes);
-// app.use('/api/courses', courseRoutes);
+app.use("/api/users", authenticateUser, userRoutes);
+app.use("/api/courses", authenticateUser, courseRoutes);
+app.use("/api/progress", authenticateUser, progressRoutes);
 
 // Celebrate validation errors
 // app.use(errors());
