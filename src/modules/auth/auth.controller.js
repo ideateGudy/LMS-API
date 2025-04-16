@@ -15,8 +15,8 @@ const generateToken = (user) => {
   return jwt.sign(
     {
       userId: user._id,
-      username: user.username, //CHECK IF THIS IS NECESSARY
-      role: user.role, //CHECK IF THIS IS NECESSARY
+      username: user.username,
+      role: user.role,
     },
     JWT_SECRET,
     { expiresIn: "1d" }
@@ -24,7 +24,7 @@ const generateToken = (user) => {
 };
 
 export const registerUser = catchAsync(async (req, res) => {
-  const { username, email, password } = req.body;
+  const { username, email, role, password } = req.body;
 
   if (!username || !email || !password) {
     authLogger.warn("All fields are required");
@@ -53,7 +53,7 @@ export const registerUser = catchAsync(async (req, res) => {
     });
   }
 
-  const user = await User.create({ username, email, password });
+  const user = await User.create({ username, email, role, password });
 
   const token = generateToken(user);
 
@@ -76,5 +76,33 @@ export const loginUser = catchAsync(async (req, res) => {
     status: true,
     message: "User login successful",
     data: { user: userWithoutPassword, token },
+  });
+});
+
+export const forgotPassword = catchAsync(async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    authLogger.warn("Email is required for password reset");
+    return res.status(400).json({
+      status: false,
+      message: "Email is required for password reset",
+    });
+  }
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    authLogger.warn("User not found with this email");
+    return res.status(404).json({
+      status: false,
+      message: "User not found with this email",
+    });
+  }
+
+  // Generate a password reset token and send it to the user's email
+  // (Implementation of sending email is not included in this snippet)
+
+  res.status(200).json({
+    status: true,
+    message: "Password reset link sent to your email",
   });
 });

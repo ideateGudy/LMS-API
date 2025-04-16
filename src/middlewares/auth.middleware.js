@@ -7,23 +7,30 @@ const authLogger = logger.child({
 });
 
 // Middleware to check if the user is authenticated
-export const authMiddleware = (req, res, next) => {
+export const authenticateUser = (req, res, next) => {
   authLogger.info("Hit Authentication Middleware");
-  const token = req.headers["authorization"]?.split(" ")[1];
 
-  if (!token) {
+  // Check if the request has an authorization header
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
     authLogger.warn("Auth-Middleware: Authorization token is required");
     return next(new APIError("Authorization token is required", 401));
   }
 
+  // Extract the token from the authorization header
+  const token = req.headers["authorization"]?.split(" ")[1];
+
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.userId = decoded.userId;
+    req.user = decoded;
     if (!req.userId) {
       authLogger.warn("Auth-Middleware: User not found");
       return next(new APIError("User not found", 404));
     }
-    authLogger.info(`Auth-Middleware: User is Authenticated ${decoded._id}`);
+    authLogger.info(`Auth-Middleware: User is Authenticated ${decoded.userId}`);
+
     next();
   } catch (err) {
     next(err);
@@ -31,15 +38,13 @@ export const authMiddleware = (req, res, next) => {
 };
 
 // Middleware to check if the user has a specific role
-export const checkRole = (role) => {
-  authLogger.info("Hit Role Middleware");
-
-  return (req, res, next) => {
-    if (req.user.role !== role) {
-      return next(
-        new APIError("You do not have permission to access this resource", 403)
-      );
+export const authorize =
+  (...roles) =>
+  (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return res
+        .status(403)
+        .json({ status: false, message: "Forbidden: Access denied" });
     }
     next();
   };
-};

@@ -22,7 +22,9 @@ export const registerValidation = celebrate({
       "string.email": "Please provide a valid email",
       "any.required": "Email is required",
     }),
-
+    role: Joi.string().valid("admin", "user", "instructor").messages({
+      "any.only": "Role must be one of 'admin', 'user', or 'instructor'",
+    }),
     password: Joi.string()
       .min(8)
       .max(128)
@@ -101,4 +103,13 @@ export const loginValidation = celebrate({
     .messages({
       "any.custom": "{{#message}}",
     }),
+});
+
+export const forgotPasswordValidation = celebrate({
+  [Segments.BODY]: Joi.object({
+    email: Joi.string().email().required().messages({
+      "string.email": "Please provide a valid email",
+      "any.required": "Email is required",
+    }),
+  }),
 });
