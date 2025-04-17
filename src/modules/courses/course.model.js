@@ -10,6 +10,8 @@ const courseSchema = new mongoose.Schema(
       enum: ["Beginner", "Intermediate", "Advanced"],
     },
     duration: { type: String, trim: true, default: "1 hour " },
+
+    prerequisites: [{ type: String, trim: true }],
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

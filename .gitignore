@@ -24,3 +24,12 @@ sendMail.js
 
 
 
+src/jest.config.js
+src/modules/assignment/
+src/modules/auth/__tests__/
+src/modules/discussion/
+src/modules/module/
+src/modules/quiz/
+
+
+
