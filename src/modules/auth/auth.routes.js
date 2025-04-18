@@ -295,7 +295,7 @@ router.post("/forgot-password", forgotPasswordValidation, forgotPassword);
  */
 
 router.post("/reset-password", resetPassword);
-
+//
 router.get("/reset-password", resetPasswordGet);
 
 export default router;
