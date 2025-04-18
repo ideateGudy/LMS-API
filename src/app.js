@@ -1,7 +1,10 @@
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
-import morgan from "morgan";
+
+import { morganMiddleware } from "./utils/logger.js";
+import swaggerUi from "swagger-ui-express";
+import swaggerSpec from "./swagger.js";
 // import cookieParser from "cookie-parser";
 
 //Import Error handlers
@@ -24,8 +27,11 @@ app.use(cors());
 app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(morgan("dev"));
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // app.use(cookieParser());
+// app.use(morgan("dev"));
+
+app.use(morganMiddleware);
 
 // Mount all routes
 app.use("/api/auth", authRoutes);
