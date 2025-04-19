@@ -36,7 +36,7 @@ app.use(morganMiddleware);
 // Mount all routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", authenticateUser, userRoutes);
-app.use("/api/courses", authenticateUser, courseRoutes);
+app.use("/api/courses", courseRoutes);
 app.use("/api/progress", authenticateUser, progressRoutes);
 
 // Celebrate validation errors
