@@ -2,7 +2,7 @@ node_modules
 .env
 authPassport.controller.js
 passport-oauth20.js
-authPassport.routes.js
+auth.passport.js
 
 
 
