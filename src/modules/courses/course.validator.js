@@ -1,23 +1,6 @@
 import { celebrate, Segments } from "celebrate";
 import Joi from "joi";
 
-export const getCourseValidation = celebrate({
-  [Segments.QUERY]: Joi.object({
-    courseId: Joi.string().messages({
-      "string.base": "Query parameter must be a string",
-    }),
-  }),
-});
-export const enrollCourseValidation = celebrate({
-  [Segments.PARAMS]: Joi.object({
-    courseId: Joi.string().required().messages({
-      "string.empty": "Course Id is required",
-      "any.required": "Course Id is required",
-      "string.base": "Parameter must be a string",
-    }),
-  }),
-});
-
 export const createCourseValidation = celebrate({
   [Segments.BODY]: Joi.object({
     title: Joi.string().required().messages({
@@ -41,5 +24,13 @@ export const createCourseValidation = celebrate({
         "any.only":
           "Skill level must be one of 'Beginner', 'Intermediate', or 'Advanced'",
       }),
+  }),
+});
+
+export const courseQueryValid = celebrate({
+  [Segments.QUERY]: Joi.object({
+    courseId: Joi.string().messages({
+      "string.base": "Query parameter must be a string",
+    }),
   }),
 });

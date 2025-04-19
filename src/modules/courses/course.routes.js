@@ -2,16 +2,16 @@ import express from "express";
 import {
   createCourse,
   getCourses,
-  enrollCourse,
-  getEnrolledCourses,
-  unEnrollCourse,
+  getCourseById,
 } from "./course.controller.js";
-import { authorize } from "../../middlewares/auth.middleware.js";
+import {
+  authenticateUser,
+  authorize,
+} from "../../middlewares/auth.middleware.js";
 
 import {
-  getCourseValidation,
+  courseQueryValid,
   createCourseValidation,
-  enrollCourseValidation,
 } from "./course.validator.js";
 
 const router = express.Router();
@@ -93,7 +93,10 @@ const router = express.Router();
  *                   example: "No courses found"
  */
 
-router.get("/", getCourseValidation, getCourses);
+router.get("/", courseQueryValid, getCourses);
+router.get("/:courseId", getCourseById);
+
+//Admin and instructors------------------------------------>>>>>>>>>>>>>>>>>>>>>>>>
 
 /**
  * @swagger
@@ -170,206 +173,26 @@ router.get("/", getCourseValidation, getCourses);
  *                   type: string
  *                   example: "All fields are required"
  */
-
 router.post(
   "/",
-
+  authenticateUser,
   authorize("admin", "instructor"),
   createCourseValidation,
   createCourse
 );
 
-/**
- * @swagger
- * /api/courses/{courseId}/enroll:
- *   post:
- *     summary: Enroll in a course
- *     description: Enroll the user in a course specified by the `courseId`.
- *     security:
- *       - bearerAuth: []
- *     tags: [Courses]
- *     parameters:
- *       - name: courseId
- *         in: path
- *         required: true
- *         description: The ID of the course to enroll in
- *         type: string
- *     responses:
- *       200:
- *         description: Successfully enrolled in the course
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: "Successfully enrolled in course"
- *       400:
- *         description: Already enrolled in this course
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   example: false
- *                 message:
- *                   type: string
- *                   example: "Already enrolled in this course"
- *       404:
- *         description: Course or user not found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   example: false
- *                 message:
- *                   type: string
- *                   example: "Course or user not found"
- */
-
-router.post(
-  "/:courseId/enroll",
-
-  enrollCourseValidation,
-  enrollCourse
-);
-
-/**
- * @swagger
- * /api/courses/enrolled:
- *   get:
- *     summary: Get enrolled courses
- *     description: Fetch a list of courses that the user is enrolled in.
- *     security:
- *       - bearerAuth: []
- *     tags: [Courses]
- *     responses:
- *       200:
- *         description: Successfully retrieved enrolled courses
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   example: true
- *                 data:
- *                   type: object
- *                   properties:
- *                     courses:
- *                       type: array
- *                       items:
- *                         type: object
- *                         properties:
- *                           _id:
- *                             type: string
- *                           title:
- *                             type: string
- *                           description:
- *                             type: string
- *                           category:
- *                             type: string
- *                           skillLevel:
- *                             type: string
- *                           createdBy:
- *                             type: string
- *                           createdAt:
- *                             type: string
- *                             format: date-time
- *       404:
- *         description: No enrolled courses found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   example: false
- *                 message:
- *                   type: string
- *                   example: "No enrolled courses found"
- */
-
-router.get(
-  "/enrolled",
-
-  getCourseValidation,
-  getEnrolledCourses
-);
-
-/**
- * @swagger
- * /api/courses/{courseId}/un-enroll:
- *   delete:
- *     summary: Unenroll from a course
- *     description: Unenroll the user from a course specified by the `courseId`.
- *     security:
- *       - bearerAuth: []
- *     tags: [Courses]
- *     parameters:
- *       - name: courseId
- *         in: path
- *         required: true
- *         description: The ID of the course to unenroll from
- *         type: string
- *     responses:
- *       200:
- *         description: Successfully unenrolled from the course
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: "Successfully unenrolled from course"
- *       400:
- *         description: Not enrolled in this course
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   example: false
- *                 message:
- *                   type: string
- *                   example: "Not enrolled in this course"
- *       404:
- *         description: Course or user not found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   example: false
- *                 message:
- *                   type: string
- *                   example: "Course or user not found"
- */
-//un enroll for course
-router.delete(
-  "/:courseId/un-enroll",
-
-  enrollCourseValidation,
-  unEnrollCourse
-);
-
 export default router;
+
+//TODO:
+// GET	/api/courses	Get all courses                                               ✅docs✅
+// POST	/api/courses	Create a new course (admin/instructor)                        ✅docs✅
+// GET	/api/courses/:courseId	Get course by ID                                    ✅docs
+// PUT	/api/courses/:courseId	Update course details (owner only)
+// DELETE	/api/courses/:courseId	Delete course (admin/instructor only)
+// GET	/api/courses?category=x	Filter by category
+// GET	/api/courses?skillLevel=y	Filter by skill level
+// GET	/api/courses/mine	Get courses created by the logged-in instructor
+// GET /api/courses/:courseId/students – get all students in a course (for instructors)
+// POST /api/courses/:courseId/feedback – submit feedback or rating
+// GET /api/courses/:courseId/progress – instructor view of student progress
+//Add instructors to an existing course granting them permission to manage students

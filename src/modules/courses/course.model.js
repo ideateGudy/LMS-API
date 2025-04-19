@@ -25,7 +25,7 @@ const courseSchema = new mongoose.Schema(
 courseSchema.index({ title: 1, category: 1, skillLevel: 1 });
 
 courseSchema.virtual("summary").get(function () {
-  return `${this.title} - ${this.skillLevel} (${this.duration})`;
+  return `${this?.title} - ${this?.skillLevel} (${this?.duration})`;
 });
 
 export default mongoose.model("Course", courseSchema);
