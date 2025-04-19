@@ -26,8 +26,10 @@ const __dirname = path.dirname(__filename);
  *           description: Unique identifier for the user
  *         username:
  *           type: string
+ *           description: Unique username for the user
  *         email:
  *           type: string
+ *           description: Unique email for the user
  *         password:
  *           type: string
  *           description: Hashed password
@@ -40,6 +42,10 @@ const __dirname = path.dirname(__filename);
  *           items:
  *             type: string
  *             description: Course ID
+ *         createdBy:
+ *           type: string
+ *           description: User ID of the creator
+ *           default: null
  *         createdAt:
  *           type: string
  *           format: date-time
