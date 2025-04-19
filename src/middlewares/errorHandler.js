@@ -19,8 +19,8 @@ export const globalErrorHandler = (err, req, res, next) => {
 
   // Joi validation error
   if (isCelebrateError(err)) {
-    const passwordRequirements =
-      "Password must be at least 8 characters, and include at least one uppercase letter, one lowercase letter, one number, and one special character.";
+    // const passwordRequirements =
+    //   "Password must be at least 8 characters, and include at least one uppercase letter, one lowercase letter, one number, and one special character.";
 
     errorHandlerLogger.warn("Validation Error", err);
     const bodyError = err.details.get("body");
@@ -30,9 +30,7 @@ export const globalErrorHandler = (err, req, res, next) => {
       queryError?.details?.[0]?.message ||
       "Validation failed";
 
-    return res
-      .status(400)
-      .json({ status: false, message, passwordRequirements });
+    return res.status(400).json({ status: false, message });
   }
 
   if (err instanceof APIError) {
