@@ -34,6 +34,7 @@ const UserSchema = new Schema(
       default: "student",
     },
     enrolledCourses: [{ type: mongoose.Schema.Types.ObjectId, ref: "Course" }],
+    createdBy: { type: mongoose.Schema.Types.ObjectId, default: null },
   },
   { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
@@ -82,4 +83,8 @@ UserSchema.statics.login = async function (identifier, password) {
   return user;
 };
 
+//compare passwords
+UserSchema.methods.comparePassword = function (oldPassword) {
+  return bcrypt.compare(this.password, oldPassword);
+};
 export default mongoose.model("User", UserSchema);
