@@ -3,13 +3,14 @@ import {
   registerValidation,
   loginValidation,
   forgotPasswordValidation,
+  resetPasswordValidation,
 } from "./auth.validator.js";
 import {
   registerUser,
   loginUser,
   forgotPassword,
   resetPassword,
-  resetPasswordGet,
+  // resetPasswordGet,
 } from "./auth.controller.js";
 
 const router = express.Router();
@@ -294,8 +295,18 @@ router.post("/forgot-password", forgotPasswordValidation, forgotPassword);
  *                   example: "User not found with the token"
  */
 
-router.post("/reset-password", resetPassword);
-//
-router.get("/reset-password", resetPasswordGet);
+router.post("/reset-password", resetPasswordValidation, resetPassword);
+
+// router.get("/reset-password", resetPasswordGet);
 
 export default router;
+
+//TODO:
+// POST	/api/auth/register	Register a new user                           ✅docs✅
+// POST	/api/auth/login	Login and receive JWT token                       ✅docs✅
+// POST	/api/auth/forgot-password	- Send reset link                       ✅docs✅
+// POST	/api/auth/reset-password	- Reset with token                      ✅docs✅
+// POST	/api/auth/verify-otp	- Verify OTP (optional)
+// POST	/api/auth/verify-email	- Verify email with token (optional)
+// POST	/api/auth/logout	- Invalidate user session
+// POST	/api/auth/refresh	- Refresh JWT token

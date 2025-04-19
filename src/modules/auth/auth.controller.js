@@ -1,6 +1,5 @@
 import { catchAsync } from "../../utils/catchAsync.js";
 import { logger } from "../../utils/logger.js";
-import bcrypt from "bcryptjs";
 const authLogger = logger.child({
   logIdentifier: "Auth Controller",
 });
@@ -14,7 +13,7 @@ import { sendMail } from "../../utils/sendMail.js";
 const JWT_SECRET = process.env.JWT_SECRET;
 
 // Generate JWT token
-const generateToken = (user) => {
+const generateToken = (user, duration) => {
   return jwt.sign(
     {
       userId: user._id,
@@ -22,7 +21,7 @@ const generateToken = (user) => {
       role: user.role,
     },
     JWT_SECRET,
-    { expiresIn: "1d" }
+    { expiresIn: "1d" || duration }
   );
 };
 
@@ -58,13 +57,11 @@ export const registerUser = catchAsync(async (req, res) => {
 
   const user = await User.create({ username, email, role, password });
 
-  const token = generateToken(user);
-
   const { password: _, ...userWithoutPassword } = user.toObject();
 
   res.status(201).json({
     message: "User registered successfully",
-    data: { user: userWithoutPassword, token },
+    data: { user: userWithoutPassword },
   });
 });
 
@@ -101,7 +98,7 @@ export const forgotPassword = catchAsync(async (req, res) => {
     });
   }
 
-  const token = generateToken(user);
+  const token = generateToken(user, "5m");
   const resetUrl = `http://localhost:3000/api/auth/reset-password?token=${token}`;
   const sent = await sendMail(
     user.email,
@@ -137,26 +134,29 @@ export const resetPassword = catchAsync(async (req, res) => {
   res.json({ status: true, message: "Password has been reset successfully" });
 });
 
-export const resetPasswordGet = catchAsync((req, res) => {
-  const token = req.query.token; // Token comes from the URL query string
-  console.log("Token:----------------------------------------", token);
-  if (!token) {
-    return res
-      .status(400)
-      .json({ status: false, message: "Token is required" });
-  }
+// export const resetPasswordGet = catchAsync((req, res) => {
+//   const token = req.query.token; // Token comes from the URL query string
+//   console.log("Token:----------------------------------------", token);
+//   if (!token) {
+//     return res
+//       .status(400)
+//       .json({ status: false, message: "Token is required" });
+//   }
 
-  // Verify the token
-  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-    if (err) {
-      console.log("Token verification error:", err);
-      return res
-        .status(400)
-        .json({ status: false, message: "Invalid or expired tokenlll" });
-    }
+//   // Verify the token
+//   jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+//     if (err) {
+//       console.log("Token verification error:", err);
+//       return res
+//         .status(400)
+//         .json({ status: false, message: "Invalid or expired tokenlll" });
+//     }
 
-    // Render the password reset form, passing the token
+//     // Render the password reset form, passing the token
 
-    res.json({ status: true, message: "reset-password-form", token });
-  });
-});
+//     // res.json({ status: true, message: "reset-password-form", token });
+//     res.render("reset-password-form", {
+//       token: token,
+//     });
+//   });
+// });
