@@ -29,12 +29,11 @@ src/
 ├── modules/              # Feature-based modules (auth, users, courses, etc.)
 ├── middleware/           # Auth & error handling middleware
 ├── utils/                # Shared helpers (email, logger, etc.)
-├── config/               # Environment & DB setup
+├── config/               # DB setup
 ├── logs/                 # App logs
 ├── app.js                # Express app setup
 ├── server.js             # App entry point
-└ .env                  # Environment variables
-├ package.json
+
 
 ```
 
