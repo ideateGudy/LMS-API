@@ -8,6 +8,7 @@ import jwt from "jsonwebtoken";
 import User from "../users/user.model.js";
 import { APIError } from "../../utils/errorClass.js";
 // import { generateOTP } from "../../utils/generateOtp.js";
+
 import { sendMail } from "../../utils/sendMail.js";
 
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -21,7 +22,7 @@ const generateToken = (user, duration) => {
       role: user.role,
     },
     JWT_SECRET,
-    { expiresIn: "1d" || duration }
+    { expiresIn: duration || "1d" } // Default expiration time is 1 day
   );
 };
 
@@ -99,7 +100,10 @@ export const forgotPassword = catchAsync(async (req, res) => {
   }
 
   const token = generateToken(user, "5m");
-  const resetUrl = `http://localhost:3000/api/auth/reset-password?token=${token}`;
+  const resetUrl =
+    process.env.NODE_ENV === "production"
+      ? `https://dive-africa-lms-backend.onrender.com/api/auth/reset-password?token=${token}`
+      : `http://localhost:3000/api/auth/reset-password?token=${token}`;
   const sent = await sendMail(
     user.email,
     "Password Reset",
@@ -121,13 +125,12 @@ export const resetPassword = catchAsync(async (req, res) => {
   const user = await User.findById(decoded.userId);
   console.log("Decoded user ID:", decoded.userId);
 
-  if (!user) {
-    return res
-      .status(404)
-      .json({ status: false, message: "Invalid or expired token" });
-  }
+  if (!user) throw new APIError("User not found", 404);
 
-  // const hashed = await bcrypt.hash(newPassword, 12);
+  const isMatch = await user.comparePassword(newPassword);
+  if (isMatch)
+    throw new APIError("New password cannot be the same as old password", 400);
+
   user.password = newPassword;
   await user.save();
 
