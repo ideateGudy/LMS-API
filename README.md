@@ -1,4 +1,4 @@
-# 🌍 Dive Africa LMS
+# 🌍 LMS
 
 This is a modern, Learning Management System (LMS) built to empower students and instructors across Africa with scalable, real-time, and engaging online education. This project is structured as a modular monolith architecture using Node.js, Express and MongoDB.
 
