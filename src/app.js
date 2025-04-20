@@ -39,6 +39,10 @@ app.use("/api/users", authenticateUser, userRoutes);
 app.use("/api/courses", courseRoutes);
 app.use("/api/progress", authenticateUser, progressRoutes);
 
+app.get("/", (req, res) => {
+  res.send("Welcome to the Dive Africa LMS API 🎓");
+});
+
 // Celebrate validation errors
 // app.use(errors());
 
