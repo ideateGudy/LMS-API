@@ -3,7 +3,8 @@ import Progress from "./progress.model.js";
 
 export const getAllProgress = catchAsync(async (req, res) => {
   const progress = await Progress.find({ student: req.userId }).populate(
-    "course"
+    "course",
+    " title description "
   );
 
   if (!progress || progress.length === 0) {
@@ -13,6 +14,7 @@ export const getAllProgress = catchAsync(async (req, res) => {
   }
   res.status(200).json({
     status: true,
+    count: progress.length,
     message: `Fetched Successfully`,
     data: { progress },
   });
