@@ -24,6 +24,9 @@ export const createCourseValidation = celebrate({
         "any.only":
           "Skill level must be one of 'Beginner', 'Intermediate', or 'Advanced'",
       }),
+    prerequisites: Joi.array().items(Joi.string()).messages({
+      "array.base": "Prerequisites must be an array of strings",
+    }),
   }),
 });
 

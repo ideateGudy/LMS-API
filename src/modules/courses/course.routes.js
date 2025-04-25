@@ -3,6 +3,7 @@ import {
   createCourse,
   getCourses,
   getCourseById,
+  getMyCourses,
 } from "./course.controller.js";
 import {
   authenticateUser,
@@ -181,17 +182,23 @@ router.post(
   createCourse
 );
 
+//TODO: error:  CastError Cast to ObjectId failed for value "mine" (type string) at path "_id" for model "Course"
+router.get(
+  "/mine",
+  authenticateUser,
+  authorize("admin", "instructor"),
+  getMyCourses
+);
+
 export default router;
 
 //TODO:
-// GET	/api/courses	Get all courses                                               ✅docs✅
+// GET	/api/courses	Get all courses with filters                                  ✅docs✅
 // POST	/api/courses	Create a new course (admin/instructor)                        ✅docs✅
 // GET	/api/courses/:courseId	Get course by ID                                    ✅docs
+// GET	/api/courses/mine	Get courses created by the logged-in instructor
 // PUT	/api/courses/:courseId	Update course details (owner only)
 // DELETE	/api/courses/:courseId	Delete course (admin/instructor only)
-// GET	/api/courses?category=x	Filter by category
-// GET	/api/courses?skillLevel=y	Filter by skill level
-// GET	/api/courses/mine	Get courses created by the logged-in instructor
 // GET /api/courses/:courseId/students – get all students in a course (for instructors)
 // POST /api/courses/:courseId/feedback – submit feedback or rating
 // GET /api/courses/:courseId/progress – instructor view of student progress
