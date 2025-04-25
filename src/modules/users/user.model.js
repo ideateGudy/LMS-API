@@ -43,7 +43,7 @@ UserSchema.virtual("isAdmin").get(function () {
   return this.role === "admin";
 });
 
-UserSchema.virtual("courses", {
+UserSchema.virtual("coursesCreatedByUser", {
   ref: "Course",
   localField: "_id",
   foreignField: "createdBy",
@@ -84,7 +84,7 @@ UserSchema.statics.login = async function (identifier, password) {
 };
 
 //compare passwords
-UserSchema.methods.comparePassword = function (oldPassword) {
-  return bcrypt.compare(this.password, oldPassword);
+UserSchema.methods.comparePassword = async function (password) {
+  return await bcrypt.compare(password, this.password);
 };
 export default mongoose.model("User", UserSchema);

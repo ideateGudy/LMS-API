@@ -11,16 +11,14 @@ export const getUser = catchAsync(async (req, res) => {
   const userId = req.userId;
   const user = await User.findById(userId)
     .select("-password")
-    .populate("courses");
+    .populate("coursesCreatedByUser");
   if (!user) {
     userLogger.error("User not found", { userId });
     throw new APIError("User not found", 404);
   }
 
-  const count = user.courses.length;
-
   userLogger.info("User retrieved successfully", { userId });
-  res.status(200).json({ status: true, data: { count, user } });
+  res.status(200).json({ status: true, data: { user } });
 });
 
 export const getUsers = catchAsync(async (req, res) => {
@@ -34,28 +32,28 @@ export const getUsers = catchAsync(async (req, res) => {
   const users = await User.find(filters)
     .select("-password")
     .sort({ createdAt: -1 })
-    .populate("courses");
+    .populate("coursesCreatedByUser");
   if (!users || users.length === 0) {
     userLogger.error("No users found");
     throw new APIError("No users found", 404);
   }
-  const totalResult = users.length;
-  userLogger.info("Users retrieved successfully", { count: users.length });
+  const count = users.length;
+  userLogger.info("Users retrieved successfully", { count });
 
-  res.status(200).json({ status: true, totalResult, data: { users } });
+  res.status(200).json({ status: true, count, data: { users } });
 });
 
 export const enrollCourse = catchAsync(async (req, res) => {
   const userId = req.userId;
   const { courseId } = req.params;
-  if (!courseId) throw APIError("No Course selected", 400);
+  if (!courseId) throw new APIError("No Course selected", 400);
 
   const course = await Course.findById(courseId);
 
-  if (!course) throw APIError("No Course found", 400);
+  if (!course) throw new APIError("No Course found", 400);
 
   const user = await User.findById(userId).populate("enrolledCourses");
-  if (!user) throw APIError("User not found", 404);
+  if (!user) throw new APIError("User not found", 404);
 
   if (user.enrolledCourses.some((course) => course._id.equals(courseId))) {
     userLogger.warn("Already enrolled in this course", {
@@ -86,14 +84,14 @@ export const enrollCourse = catchAsync(async (req, res) => {
 export const unEnrollCourse = catchAsync(async (req, res) => {
   const userId = req.userId;
   const { courseId } = req.params;
-  if (!courseId) throw APIError("No Course selected", 400);
+  if (!courseId) throw new APIError("No Course selected", 400);
 
   const course = await Course.findById(courseId);
 
-  if (!course) throw APIError("No Course found", 400);
+  if (!course) throw new APIError("No Course found", 400);
 
   const user = await User.findById(userId).populate("enrolledCourses");
-  if (!user) throw APIError("User not found", 404);
+  if (!user) throw new APIError("User not found", 404);
 
   if (!user.enrolledCourses.some((course) => course._id.equals(courseId))) {
     userLogger.warn("Not enrolled in this course", {
@@ -114,7 +112,7 @@ export const unEnrollCourse = catchAsync(async (req, res) => {
     userId,
     courseId,
   });
-  res.status(200).json({
+  res.status(204).json({
     status: true,
     message: `Successfully unenrolled from ${course.title}`,
     data: { course },
@@ -125,7 +123,7 @@ export const getEnrolledCourses = catchAsync(async (req, res) => {
   const userId = req.userId;
   const user = await User.findById(userId).populate("enrolledCourses");
 
-  if (!user) throw APIError("User not found", 404);
+  if (!user) throw new APIError("User not found", 404);
 
   if (user.enrolledCourses.length === 0) {
     return res.status(200).json({
@@ -140,11 +138,10 @@ export const getEnrolledCourses = catchAsync(async (req, res) => {
     count: user.enrolledCourses.length,
   });
 
-  return res.status(200).json({
+  res.status(200).json({
     status: true,
+    count: user.enrolledCourses.length,
     data: {
-      status: true,
-      count: user.enrolledCourses.length,
       courses: user.enrolledCourses,
     },
   });
@@ -154,7 +151,7 @@ export const updateUser = catchAsync(async (req, res) => {
   const userId = req.userId;
   const { username, email } = req.body;
   const user = await User.findById(userId);
-  if (!user) throw APIError("User not found", 404);
+  if (!user) throw new APIError("User not found", 404);
   if (username) user.username = username;
   if (email) user.email = email;
   await user.save();
@@ -166,13 +163,17 @@ export const updateUser = catchAsync(async (req, res) => {
   });
 });
 
-export const updatePassword = catchAsync(async (req, res) => {
+export const changePassword = catchAsync(async (req, res) => {
   const userId = req.userId;
   const { oldPassword, newPassword } = req.body;
   const user = await User.findById(userId);
-  if (!user) throw APIError("User not found", 404);
+  if (!user) throw new APIError("User not found", 404);
   const isMatch = await user.comparePassword(oldPassword);
-  if (!isMatch) throw APIError("Old password is incorrect", 400);
+  if (!isMatch) throw new APIError("Old password is incorrect", 400);
+
+  const isSame = await user.comparePassword(newPassword);
+  if (isSame)
+    throw new APIError("New password cannot be same as old password", 400);
   user.password = newPassword;
   await user.save();
   userLogger.info("User password changed successfully", { userId });
@@ -188,18 +189,13 @@ export const deleteUser = catchAsync(async (req, res) => {
   const user = await User.findOneAndDelete({
     $or: [{ _id: userId }, { username }],
   });
-  if (!user) throw APIError("User not found", 404);
+  if (!user) throw new APIError("User not found", 404);
   userLogger.info("User deleted successfully", { userId });
-  return res.status(204).json({
-    status: true,
-    message: "User deleted successfully",
-  });
+  res.status(204).send("");
 });
 
 export const createUser = catchAsync(async (req, res) => {
   const userId = req.userId;
-  // const user = User.findById(userId);
-  // if (!user) throw APIError("User not found", 404);
 
   const { username, email, role, password } = req.body;
 

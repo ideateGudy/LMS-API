@@ -66,20 +66,21 @@ export const updatePasswordValidation = celebrate({
         return value;
       })
       .messages({
-        "string.min": "Password must be at least 8 characters",
-        "string.max": "Password must not exceed 128 characters",
-        "string.empty": "Password cannot be empty",
-        "any.required": "Password is required",
+        "string.min": "New Password field must be at least 8 characters",
+        "string.max": "New Password field must not exceed 128 characters",
+        "string.empty": "New Password field cannot be empty",
+        "any.required": "New Password field is required",
         "password.uppercase":
-          "Password must contain at least one uppercase letter",
+          "New Password field must contain at least one uppercase letter",
         "password.lowercase":
-          "Password must contain at least one lowercase letter",
-        "password.number": "Password must contain at least one number",
+          "New Password field must contain at least one lowercase letter",
+        "password.number":
+          "New Password field must contain at least one number",
         "password.symbol":
-          "Password must contain at least one special character",
-        "string.base": "Password must be a string",
+          "New Password field must contain at least one special character",
+        "string.base": "New Password field must be a string",
         "string.pattern.base":
-          "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character",
+          "New Password field must contain at least one uppercase letter, one lowercase letter, one number, and one special character",
       }),
   }),
 });

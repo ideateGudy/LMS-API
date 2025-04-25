@@ -6,7 +6,7 @@ import {
   getEnrolledCourses,
   unEnrollCourse,
   updateUser,
-  updatePassword,
+  changePassword,
   deleteUser,
   createUser,
 } from "./user.controller.js";
@@ -96,7 +96,7 @@ router.get("/user", getUser);
 
 /**
  * @swagger
- * /api/users/enroll/{courseId}:
+ * /api/users/user/enroll/{courseId}:
  *   post:
  *     summary: Enroll in a course
  *     description: Enroll the user in a course specified by the `courseId`.
@@ -150,11 +150,11 @@ router.get("/user", getUser);
  *                   type: string
  *                   example: "Course or user not found"
  */
-router.post("/enroll/:courseId", validateCourse, enrollCourse);
+router.post("/user/enroll/:courseId", validateCourse, enrollCourse);
 
 /**
  * @swagger
- * /api/users/unenroll/{courseId}:
+ * /api/users/user/unenroll/{courseId}:
  *   delete:
  *     summary: Unenroll from a course
  *     description: Unenroll the user from a course specified by the `courseId`.
@@ -209,11 +209,11 @@ router.post("/enroll/:courseId", validateCourse, enrollCourse);
  *                   example: "Course or user not found"
  */
 //un enroll for course
-router.delete("/unenroll/:courseId", validateCourse, unEnrollCourse);
+router.delete("/user/unenroll/:courseId", validateCourse, unEnrollCourse);
 
 /**
  * @swagger
- * /api/users/enrolled-courses:
+ * /api/users/user/enrolled-courses:
  *   get:
  *     summary: Get enrolled courses
  *     description: Fetch a list of courses that the user is enrolled in.
@@ -268,11 +268,102 @@ router.delete("/unenroll/:courseId", validateCourse, unEnrollCourse);
  *                   type: string
  *                   example: "No enrolled courses found"
  */
-router.get("/enrolled-courses", getEnrolledCourses);
+router.get("/user/enrolled-courses", getEnrolledCourses);
+/**
+ * @swagger
+ * /api/users/user/update:
+ *   put:
+ *     summary: Update the authenticated user's profile
+ *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *             example:
+ *               username: new_username
+ *               email: new_email@example.com
+ *     responses:
+ *       200:
+ *         description: User updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: User updated successfully
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     user:
+ *                       $ref: '#/components/schemas/User'
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
+router.put("/user/update", updateUserValidation, updateUser);
 
-router.put("/update", updateUserValidation, updateUser);
-
-router.put("/change-password", updatePasswordValidation, updatePassword);
+/**
+ * @swagger
+ * /api/users/user/change-password:
+ *   patch:
+ *     summary: Change the authenticated user's password
+ *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - oldPassword
+ *               - newPassword
+ *             properties:
+ *               oldPassword:
+ *                 type: string
+ *               newPassword:
+ *                 type: string
+ *             example:
+ *               oldPassword: old_password123
+ *               newPassword: new_password123
+ *     responses:
+ *       200:
+ *         description: Password changed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Password changed successfully
+ *       400:
+ *         description: Validation error or old password incorrect
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
+router.patch("/user/change-password", updatePasswordValidation, changePassword);
 
 //Admins-------------------------------------->>>>>
 
@@ -284,13 +375,6 @@ router.put("/change-password", updatePasswordValidation, updatePassword);
  *     tags: [User]
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *       - in: header
- *         name: Authorization
- *         schema:
- *           type: string
- *         required: true
- *         description: Bearer token for admin access
  *     responses:
  *       200:
  *         description: Successfully retrieved all users
@@ -348,9 +432,91 @@ router.put("/change-password", updatePasswordValidation, updatePassword);
  *                   type: string
  *                   example: "Internal server error"
  */
-router.post("/create", authorize("admin"), createUser);
 router.get("/", authorize("admin"), getUsers);
-router.delete("/", authorize("admin"), deleteUser);
+/**
+ * @swagger
+ * /api/users/create:
+ *   post:
+ *     summary: Admin-only - Create a new user
+ *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             required:
+ *               - username
+ *               - email
+ *               - password
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               role:
+ *                 type: string
+ *             example:
+ *               username: johndoe
+ *               email: john@example.com
+ *               password: secret123
+ *               role: student
+ *     responses:
+ *       201:
+ *         description: User registered successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: User registered successfully
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     user:
+ *                       $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Missing required fields
+ *       409:
+ *         description: Conflict - User already exists
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
+router.post("/create", authorize("admin"), createUser);
+/**
+ * @swagger
+ * /api/users/user:
+ *   delete:
+ *     summary: Admin-only - Delete a user by ID or username
+ *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: userId
+ *         schema:
+ *           type: string
+ *         description: User ID to delete
+ *       - in: query
+ *         name: username
+ *         schema:
+ *           type: string
+ *         description: Username of the user to delete
+ *     responses:
+ *       204:
+ *         description: User deleted successfully (no content)
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
+router.delete("/user", authorize("admin"), deleteUser);
 
 export default router;
 
@@ -360,7 +526,7 @@ export default router;
 // POST	/api/users/enroll/:courseId -	Enroll in a course                                            ✅docs✅
 // DELETE	/api/users/unenroll/:courseId -	Unenroll from a course                                    ✅docs✅
 // GET	/api/users/enrolled-courses -	Get list of courses the user is enrolled in                   ✅docs✅
-// PUT	/api/users/update -	Update own user profile                                                 ✅docs
-// PUT  /api/auth/change-password	- Update password                                                 ✅docs
-// DELETE	/api/users?username=test&id=55367738 -	Delete a user (admin-only)                        ✅docs
-// POST  /api/users/create -		Create a new user (admin-only)                                      ✅docs
+// PUT	/api/users/update -	Update own user profile                                                 ✅docs✅
+// PUT  /api/auth/change-password	- Update password                                                 ✅docs✅
+// DELETE	/api/users?username=test&id=55367738 -	Delete a user (admin-only)                        ✅docs✅
+// POST  /api/users/create -		Create a new user (admin-only)                                      ✅docs✅
