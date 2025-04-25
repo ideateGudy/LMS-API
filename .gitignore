@@ -20,7 +20,6 @@ mongoose.md
 src/logs/**
 logs/**
 generateOtp.js
-sendMail.js
 
 
 
