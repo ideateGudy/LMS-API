@@ -1,4 +1,7 @@
 import winston from "winston";
+// import axios from "axios";
+import DailyRotateFile from "winston-daily-rotate-file";
+// import FormData from "form-data";
 import morgan from "morgan";
 import { fileURLToPath } from "url";
 import path from "path";
@@ -33,18 +36,24 @@ export const logger = winston.createLogger({
     align(),
     json()
   ),
-  defaultMeta: { type: "REST API" },
+  defaultMeta: { appName: "Dive Africa REST API" },
   transports: [
     new winston.transports.Console({
       format: combine(colorize(), simple()),
     }),
-    new winston.transports.File({
-      filename: path.resolve(__dirname, "../../src/logs/combined.log"),
+    new DailyRotateFile({
+      filename: path.resolve(__dirname, "../../src/logs/combined-%DATE%.log"),
+      datePattern: "YYYY-MM-DD",
+      maxFiles: "2d",
+      zippedArchive: true,
       format: combine(timestamp(), json()),
     }),
-    new winston.transports.File({
-      filename: path.resolve(__dirname, "../../src/logs/error.log"),
+    new DailyRotateFile({
+      filename: path.resolve(__dirname, "../../src/logs/error-%DATE%.log"),
       level: "error",
+      datePattern: "YYYY-MM-DD",
+      maxFiles: "2d",
+      zippedArchive: true,
     }),
     // new winston.transports.File({
     //   filename: path.resolve(__dirname, "../../src/logs/warn.log"),
@@ -71,16 +80,22 @@ export const logger = winston.createLogger({
 // );
 
 winston.add(
-  new winston.transports.File({
-    filename: path.resolve(__dirname, "../../src/logs/exception.log"),
+  new DailyRotateFile({
+    filename: path.resolve(__dirname, "../../src/logs/exception-%DATE%.log"),
     handleExceptions: true,
+    datePattern: "YYYY-MM-DD",
+    maxFiles: "5d",
+    zippedArchive: true,
   })
 );
 
 winston.add(
-  new winston.transports.File({
-    filename: path.resolve(__dirname, "../../src/logs/rejections.log"),
+  new DailyRotateFile({
+    filename: path.resolve(__dirname, "../../src/logs/rejections-%DATE%.log"),
     handleRejections: true,
+    datePattern: "YYYY-MM-DD",
+    maxFiles: "5d",
+    zippedArchive: true,
   })
 );
 
@@ -108,3 +123,37 @@ export const morganMiddleware = morgan(
     },
   }
 );
+
+// const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN;
+// const telegramChatId = process.env.TELEGRAM_BOT_ID;
+// transport.on("rotate", (oldFilename, newFilename) => {
+//   const gzippedFile = `${oldFilename}.gz`;
+
+//   setTimeout(() => {
+//     (async () => {
+//       try {
+//         // Check file existence properly
+//         await fs.promises.access(gzippedFile, fs.constants.F_OK);
+
+//         const formData = new FormData();
+//         formData.append("chat_id", telegramChatId);
+//         formData.append("document", fs.createReadStream(gzippedFile));
+
+//         const response = await axios.post(
+//           `https://api.telegram.org/bot${telegramBotToken}/sendDocument`,
+//           formData,
+//           {
+//             headers: formData.getHeaders(),
+//           }
+//         );
+
+//         console.log(`✅ Log sent to Telegram: ${gzippedFile}`);
+//       } catch (err) {
+//         console.error(
+//           "🚨 Failed to send rotated log to Telegram:",
+//           err.message
+//         );
+//       }
+//     })();
+//   }, 3000); // Wait a bit for zip to finish
+// });
