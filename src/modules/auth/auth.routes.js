@@ -264,7 +264,7 @@ router.post("/forgot-password", forgotPasswordValidation, forgotPassword);
  *                   description: Success message
  *                   example: "Password has been reset successfully"
  *       400:
- *         description: Bad Request (Invalid or expired token, or newPassword not provided)
+ *         description: Bad Request (Invalid or expired token, or newPassword not provided or New password cannot be the same as old password)
  *         content:
  *           application/json:
  *             schema:
@@ -277,7 +277,7 @@ router.post("/forgot-password", forgotPasswordValidation, forgotPassword);
  *                 message:
  *                   type: string
  *                   description: Error message
- *                   example: "Invalid or expired token"
+ *                   example: "Invalid or expired token or New password cannot be the same as old password"
  *       404:
  *         description: User not found with the decoded token
  *         content:

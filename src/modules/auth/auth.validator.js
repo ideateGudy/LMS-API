@@ -22,8 +22,8 @@ export const registerValidation = celebrate({
       "string.email": "Please provide a valid email",
       "any.required": "Email is required",
     }),
-    role: Joi.string().valid("admin", "user", "instructor").messages({
-      "any.only": "Role must be one of 'admin', 'user', or 'instructor'",
+    role: Joi.string().valid("admin", "student", "instructor").messages({
+      "any.only": "Role must be one of 'admin', 'student', or 'instructor'",
     }),
     password: Joi.string()
       .min(8)
@@ -119,11 +119,6 @@ export const forgotPasswordValidation = celebrate({
 
 export const resetPasswordValidation = celebrate({
   [Segments.BODY]: Joi.object({
-    token: Joi.string().required().messages({
-      "string.empty": "Token is required",
-      "any.required": "Token is required",
-      "string.base": "Token must be a string",
-    }),
     newPassword: Joi.string()
       .min(8)
       .max(128)
@@ -165,5 +160,11 @@ export const resetPasswordValidation = celebrate({
         "string.pattern.base":
           "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character",
       }),
+  }),
+  [Segments.QUERY]: Joi.object({
+    token: Joi.string().required().messages({
+      "string.empty": "Token is required",
+      "any.required": "Token is required",
+    }),
   }),
 });
