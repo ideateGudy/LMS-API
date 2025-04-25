@@ -8,14 +8,14 @@ const errorHandlerLogger = logger.child({
 });
 
 export const globalErrorHandler = (err, req, res, next) => {
-  if (process.env.NODE_ENV === "development") {
-    errorHandlerLogger.error("APIError", {
-      message: err.message,
-      statusCode: err.statusCode,
-      name: err.name,
-      stack: err.stack,
-    });
-  }
+  // if (process.env.NODE_ENV === "development") {
+  //   errorHandlerLogger.error("APIError", {
+  //     message: err.message,
+  //     statusCode: err.statusCode,
+  //     name: err.name,
+  //     stack: err.stack,
+  //   });
+  // }
 
   // Joi validation error
   if (isCelebrateError(err)) {
@@ -52,13 +52,13 @@ export const globalErrorHandler = (err, req, res, next) => {
 
     return res.status(401).json({
       status: false,
-      message: "Token Expired. Please log in again.",
+      message: "Token Expired.",
     });
   } else if (err instanceof jwt.JsonWebTokenError) {
     errorHandlerLogger.error("JsonWebTokenError", err);
     return res.status(401).json({
       status: false,
-      message: "Invalid Token. Please log in again.",
+      message: "Invalid Token.",
     });
   } else if (err instanceof jwt.NotBeforeError) {
     errorHandlerLogger.error("NotBeforeError", err);
