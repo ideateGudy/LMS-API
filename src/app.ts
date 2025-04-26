@@ -1,4 +1,4 @@
-import express, { Express, Request, Response, NextFunction } from 'express';
+import express, { Express, Request, Response, NextFunction, ErrorRequestHandler } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import { morganMiddleware } from './utils/logger';
@@ -62,6 +62,6 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 // Global error handler (must be last middleware)
-app.use(globalErrorHandler);
+app.use(globalErrorHandler as ErrorRequestHandler);
 
 export default app;

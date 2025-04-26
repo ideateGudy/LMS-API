@@ -1,14 +1,17 @@
 import { Request, Response, NextFunction } from "express";
 import { logger } from "../utils/logger.js";
 import { APIError } from "../utils/errorClass.js";
-import jwt, {
-  TokenExpiredError,
-  JsonWebTokenError,
-  NotBeforeError,
-} from "jsonwebtoken";
+// import jwt, {
+//   TokenExpiredError,
+//   JsonWebTokenError,
+//   NotBeforeError,
+// } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
+
+
 import { isCelebrateError, CelebrateError } from "celebrate";
 
-
+const { TokenExpiredError, JsonWebTokenError, NotBeforeError } = jwt;
 const errorHandlerLogger = logger.child({
   logIdentifier: "Global Error Handler Middleware",
 });
