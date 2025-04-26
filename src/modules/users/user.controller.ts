@@ -4,6 +4,7 @@ import User from "./user.model";
 import Course from "../courses/course.model";
 import { APIError } from "../../utils/errorClass";
 import { logger } from "../../utils/logger";
+import mongoose, {Types} from "mongoose";
 
 const userLogger = logger.child({
   logIdentifier: "User Controller",
@@ -49,11 +50,14 @@ export const getUsers = catchAsync(async (req: Request, res: Response) => {
   res.status(200).json({ status: true, count, data: { users } });
 });
 
-export const enrollCourse = catchAsync(async (req: IUserRequest, res: Response) => {
-  const userId = req.userId;
-  const { courseId } = req.params;
-  if (!courseId) throw new APIError("No Course selected", 400);
 
+
+export const enrollCourse = catchAsync(async (req: IUserRequest, res: Response) => {
+  const userId = new mongoose.Types.ObjectId(req.userId);
+  const { courseId: courseIdParam } = req.params;
+  if (!courseIdParam) throw new APIError("No Course selected", 400);
+
+  const courseId = new mongoose.Types.ObjectId(courseIdParam);
   const course = await Course.findById(courseId);
 
   if (!course) throw new APIError("No Course found", 400);
@@ -71,8 +75,11 @@ export const enrollCourse = catchAsync(async (req: IUserRequest, res: Response) 
       message: "Already enrolled in this course",
     });
   }
+
   user.enrolledCourses.push(courseId);
+  if (!course.enrolledStudents) course.enrolledStudents = [];
   course.enrolledStudents.push(userId);
+  
   await user.save();
   await course.save();
 
@@ -87,43 +94,53 @@ export const enrollCourse = catchAsync(async (req: IUserRequest, res: Response) 
   });
 });
 
+
+
 export const unEnrollCourse = catchAsync(async (req: IUserRequest, res: Response) => {
-  const userId = req.userId;
-  const { courseId } = req.params;
-  if (!courseId) throw new APIError("No Course selected", 400);
+  const userId = new mongoose.Types.ObjectId(req.userId);
+  const { courseId: courseIdParam } = req.params;
+  
+  if (!courseIdParam) throw new APIError("No Course selected", 400);
+  const courseId = new mongoose.Types.ObjectId(courseIdParam);
 
   const course = await Course.findById(courseId);
-
   if (!course) throw new APIError("No Course found", 400);
 
   const user = await User.findById(userId).populate("enrolledCourses");
   if (!user) throw new APIError("User not found", 404);
 
-  if (!user.enrolledCourses.some((course: any) => course._id.equals(courseId))) {
-    userLogger.warn("Not enrolled in this course", {
-      userId,
-      courseId,
-    });
+  // Check enrollment
+  const isEnrolled = user.enrolledCourses.some(
+    (enrolledCourse) => enrolledCourse._id.equals(courseId)
+  );
+  
+  if (!isEnrolled) {
+    userLogger.warn("Not enrolled in this course", { userId, courseId });
     return res.status(400).json({
       status: false,
       message: "Not enrolled in this course",
     });
   }
-  user.enrolledCourses.pull(courseId);
-  course.enrolledStudents.pull(userId);
-  await user.save();
-  await course.save();
 
-  userLogger.info("User unenrolled from course", {
-    userId,
-    courseId,
-  });
-  res.status(204).json({
+  // Use pull with proper typing
+  // user.enrolledCourses.pull(courseId);
+  (course.enrolledStudents as Types.Array<Types.ObjectId>).pull(userId);
+  
+  if (course.enrolledStudents) {
+    (course.enrolledStudents as mongoose.Types.Array<mongoose.Types.ObjectId>).pull(userId);
+  }
+
+  await Promise.all([user.save(), course.save()]);
+
+  userLogger.info("User unenrolled from course", { userId, courseId });
+  res.status(200).json({
     status: true,
     message: `Successfully unenrolled from ${course.title}`,
     data: { course },
   });
 });
+
+
 
 export const getEnrolledCourses = catchAsync(async (req: IUserRequest, res: Response) => {
   const userId = req.userId;
