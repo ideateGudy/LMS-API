@@ -72,9 +72,11 @@ export const authenticateUser = (
 export const authorize = (...roles: string[]) => {
   return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     if (!req.user?.role || !roles.includes(req.user.role)) {
-      return res
+      res
         .status(403)
         .json({ status: false, message: "Forbidden: Access denied" });
+
+      return ;
     }
     next();
   };
