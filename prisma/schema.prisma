@@ -1,3 +1,9 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
 generator client {
   provider = "prisma-client-js"
   output   = "../generated/prisma"
@@ -8,215 +14,206 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model assignment {
-  id                   String                 @id
-  title                String
-  task                 String
-  startDate            DateTime
-  dueDate              DateTime
-  mode                 assignment_mode
-  courseId             String?
-  moduleId             String?
-  lessonId             String?
-  course               course?                @relation(fields: [courseId], references: [id], map: "Assignment_courseId_fkey")
-  lesson               lesson?                @relation(fields: [lessonId], references: [id], map: "Assignment_lessonId_fkey")
-  module               module?                @relation(fields: [moduleId], references: [id], map: "Assignment_moduleId_fkey")
-  assignmentsubmission assignmentsubmission[]
-
-  @@index([courseId], map: "Assignment_courseId_fkey")
-  @@index([lessonId], map: "Assignment_lessonId_fkey")
-  @@index([moduleId], map: "Assignment_moduleId_fkey")
+enum Role {
+  STUDENT
+  INSTRUCTOR
+  ADMIN
 }
 
-model assignmentsubmission {
-  id           String                      @id
-  content      String
-  status       assignmentsubmission_status @default(PENDING)
-  grade        Int?
-  createdAt    DateTime                    @default(now())
-  assignmentId String
-  studentId    String
-  assignment   assignment                  @relation(fields: [assignmentId], references: [id], map: "AssignmentSubmission_assignmentId_fkey")
-  user         user                        @relation(fields: [studentId], references: [id], map: "AssignmentSubmission_studentId_fkey")
-
-  @@index([assignmentId], map: "AssignmentSubmission_assignmentId_fkey")
-  @@index([studentId], map: "AssignmentSubmission_studentId_fkey")
+enum SubmissionMode {
+  LINK
+  FILE
 }
 
-model comment {
-  id           String      @id
-  content      String
-  createdAt    DateTime    @default(now())
-  authorId     String
-  lessonId     String?
-  discussionId String?
-  user         user        @relation(fields: [authorId], references: [id], map: "Comment_authorId_fkey")
-  discussion   discussion? @relation(fields: [discussionId], references: [id], map: "Comment_discussionId_fkey")
-  lesson       lesson?     @relation(fields: [lessonId], references: [id], map: "Comment_lessonId_fkey")
-  reply        reply[]
-
-  @@index([authorId], map: "Comment_authorId_fkey")
-  @@index([discussionId], map: "Comment_discussionId_fkey")
-  @@index([lessonId], map: "Comment_lessonId_fkey")
+enum SubmissionStatus {
+  PENDING
+  IN_PROGRESS
+  DONE
 }
 
-model course {
-  id                     String           @id
-  title                  String
-  description            String
-  category               String
-  topic                  String
-  language               String
-  subtitleLanguage       String?
-  level                  String
-  duration               Int
-  material               String
-  promoVideo             String
-  targetAudience         String
-  requirements           String
-  curriculum             String
-  welcomeMessage         String
-  congratulationsMessage String
-  submittedForReview     Boolean          @default(false)
-  approved               Boolean          @default(false)
-  rejected               Boolean          @default(false)
-  createdAt              DateTime         @default(now())
-  updatedAt              DateTime
-  assignment             assignment[]
-  courseprogress         courseprogress[]
-  discussion             discussion[]
-  module                 module[]
-  user_courseinstructors user[]           @relation("courseinstructors")
-  user_enrolledcourses   user[]           @relation("enrolledcourses")
+model User {
+  id              String                  @id @default(uuid())
+  email           String                  @unique
+  username        String                  @unique
+  password        String
+  role            Role                    @default(STUDENT)
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+
+  // Relations
+  courses         Course[]                @relation("CourseInstructors")
+  enrolledCourses Course[]                @relation("EnrolledCourses")
+  courseProgress  CourseProgress[]
+  lessonProgress  LessonProgress[]
+  submissions     AssignmentSubmission[]
+  comments        Comment[]
+  replies         Reply[]
+  notifications   Notification[]
 }
 
-model courseprogress {
-  id       String @id
-  progress Int    @default(0)
-  userId   String
-  courseId String
-  course   course @relation(fields: [courseId], references: [id], map: "CourseProgress_courseId_fkey")
-  user     user   @relation(fields: [userId], references: [id], map: "CourseProgress_userId_fkey")
+model Course {
+  id                      String         @id @default(uuid())
+  title                   String
+  description             String
+  category                String
+  topic                   String
+  language                String
+  subtitleLanguage        String?
+  level                   String
+  duration                Int
+  material                String
+  promoVideo              String
+  targetAudience          String
+  requirements            String
+  curriculum              String
+  welcomeMessage          String
+  congratulationsMessage  String
+  submittedForReview      Boolean        @default(false)
+  approved                Boolean        @default(false)
+  rejected                Boolean        @default(false)
+  createdAt               DateTime       @default(now())
+  updatedAt               DateTime       @updatedAt
 
-  @@index([courseId], map: "CourseProgress_courseId_fkey")
-  @@index([userId], map: "CourseProgress_userId_fkey")
+  // Relations
+  instructors             User[]         @relation("CourseInstructors")
+  students                User[]         @relation("EnrolledCourses")
+  modules                 Module[]
+  discussions             Discussion[]
+  assignments             Assignment[]
+  progress                CourseProgress[]
 }
 
-model discussion {
-  id        String    @id
-  createdAt DateTime  @default(now())
-  courseId  String?
-  moduleId  String?
-  comment   comment[]
-  course    course?   @relation(fields: [courseId], references: [id], map: "Discussion_courseId_fkey")
-  module    module?   @relation(fields: [moduleId], references: [id], map: "Discussion_moduleId_fkey")
-
-  @@index([courseId], map: "Discussion_courseId_fkey")
-  @@index([moduleId], map: "Discussion_moduleId_fkey")
-}
-
-model lesson {
-  id             String           @id
-  title          String
-  description    String
-  videoUrl       String
-  number         Int
-  position       Int
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime
-  moduleId       String
-  assignment     assignment[]
-  comment        comment[]
-  module         module           @relation(fields: [moduleId], references: [id], map: "Lesson_moduleId_fkey")
-  lessonprogress lessonprogress[]
-
-  @@index([moduleId], map: "Lesson_moduleId_fkey")
-}
-
-model lessonprogress {
-  id        String  @id
-  completed Boolean @default(false)
-  userId    String
-  lessonId  String
-  lesson    lesson  @relation(fields: [lessonId], references: [id], map: "LessonProgress_lessonId_fkey")
-  user      user    @relation(fields: [userId], references: [id], map: "LessonProgress_userId_fkey")
-
-  @@index([lessonId], map: "LessonProgress_lessonId_fkey")
-  @@index([userId], map: "LessonProgress_userId_fkey")
-}
-
-model module {
-  id                 String       @id
+model Module {
+  id                 String       @id @default(uuid())
   title              String
   description        String
   number             Int
   submittedForReview Boolean      @default(false)
   approved           Boolean      @default(false)
   createdAt          DateTime     @default(now())
-  updatedAt          DateTime
-  courseId           String
-  assignment         assignment[]
-  discussion         discussion[]
-  lesson             lesson[]
-  course             course       @relation(fields: [courseId], references: [id], map: "Module_courseId_fkey")
+  updatedAt          DateTime     @updatedAt
 
-  @@index([courseId], map: "Module_courseId_fkey")
+  // Relations
+  course             Course       @relation(fields: [courseId], references: [id])
+  courseId           String
+  lessons            Lesson[]
+  assignments        Assignment[]
+  discussions        Discussion[]
 }
 
-model notification {
-  id        String   @id
+model Lesson {
+  id          String    @id @default(uuid())
+  title       String
+  description String
+  videoUrl    String
+  number      Int
+  position    Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  module      Module    @relation(fields: [moduleId], references: [id])
+  moduleId    String
+  assignments Assignment[]
+  comments    Comment[]
+  progress    LessonProgress[]
+}
+
+model CourseProgress {
+  id        String   @id @default(uuid())
+  progress  Int      @default(0)
+
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+
+  course    Course   @relation(fields: [courseId], references: [id])
+  courseId  String
+}
+
+model LessonProgress {
+  id        String   @id @default(uuid())
+  completed Boolean  @default(false)
+
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+
+  lesson    Lesson   @relation(fields: [lessonId], references: [id])
+  lessonId  String
+}
+
+model Assignment {
+  id          String     @id @default(uuid())
+  title       String
+  task        String
+  startDate   DateTime
+  dueDate     DateTime
+  mode        SubmissionMode
+
+  // Relations
+  course      Course?    @relation(fields: [courseId], references: [id])
+  courseId    String?
+  module      Module?    @relation(fields: [moduleId], references: [id])
+  moduleId    String?
+  lesson      Lesson?    @relation(fields: [lessonId], references: [id])
+  lessonId    String?
+  submissions AssignmentSubmission[]
+}
+
+model AssignmentSubmission {
+  id            String           @id @default(uuid())
+  content       String
+  status        SubmissionStatus @default(PENDING)
+  grade         Int?
+  createdAt     DateTime         @default(now())
+
+  // Relations
+  assignment    Assignment       @relation(fields: [assignmentId], references: [id])
+  assignmentId  String
+  student       User             @relation(fields: [studentId], references: [id])
+  studentId     String
+}
+
+model Comment {
+  id           String       @id @default(uuid())
+  content      String
+  createdAt    DateTime     @default(now())
+
+  author       User         @relation(fields: [authorId], references: [id])
+  authorId     String
+  lesson       Lesson?      @relation(fields: [lessonId], references: [id])
+  lessonId     String?
+  discussion   Discussion?  @relation(fields: [discussionId], references: [id])
+  discussionId String?
+  replies      Reply[]
+}
+
+model Reply {
+  id         String   @id @default(uuid())
+  content    String
+  createdAt  DateTime @default(now())
+
+  comment    Comment  @relation(fields: [commentId], references: [id])
+  commentId  String
+  author     User     @relation(fields: [authorId], references: [id])
+  authorId   String
+}
+
+model Discussion {
+  id         String     @id @default(uuid())
+  createdAt  DateTime   @default(now())
+
+  course     Course?    @relation(fields: [courseId], references: [id])
+  courseId   String?
+  module     Module?    @relation(fields: [moduleId], references: [id])
+  moduleId   String?
+  comments   Comment[]
+}
+
+model Notification {
+  id        String   @id @default(uuid())
   message   String
   createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
   userId    String
-  user      user     @relation(fields: [userId], references: [id], map: "Notification_userId_fkey")
-
-  @@index([userId], map: "Notification_userId_fkey")
-}
-
-model reply {
-  id        String   @id
-  content   String
-  createdAt DateTime @default(now())
-  commentId String
-  authorId  String
-  user      user     @relation(fields: [authorId], references: [id], map: "Reply_authorId_fkey")
-  comment   comment  @relation(fields: [commentId], references: [id], map: "Reply_commentId_fkey")
-
-  @@index([authorId], map: "Reply_authorId_fkey")
-  @@index([commentId], map: "Reply_commentId_fkey")
-}
-
-model user {
-  id                       String                 @id
-  email                    String                 @unique(map: "User_email_key")
-  username                 String                 @unique(map: "User_username_key")
-  password                 String
-  role                     user_role              @default(STUDENT)
-  createdAt                DateTime               @default(now())
-  updatedAt                DateTime
-  assignmentsubmission     assignmentsubmission[]
-  comment                  comment[]
-  courseprogress           courseprogress[]
-  lessonprogress           lessonprogress[]
-  notification             notification[]
-  reply                    reply[]
-  course_courseinstructors course[]               @relation("courseinstructors")
-  course_enrolledcourses   course[]               @relation("enrolledcourses")
-}
-
-enum assignmentsubmission_status {
-  PENDING
-  IN_PROGRESS
-  DONE
-}
-
-enum user_role {
-  STUDENT
-  INSTRUCTOR
-  ADMIN
-}
-
-enum assignment_mode {
-  LINK
-  FILE
 }
