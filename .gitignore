@@ -1,36 +1,7 @@
 node_modules
 .env
-authPassport.controller.js
-passport-oauth20.js
-auth.passport.js
-
-
-
-
-
-
-
-
-nodemon.json
+generated/prisma/
 note.md
-require.md
-schema.md
-error.md
-mongoose.md
-src/logs/**
-logs/**
-generateOtp.js
-
-
-
-src/jest.config.js
-src/modules/assignment/
-src/modules/auth/__tests__/
-src/modules/auth/otp.model.js
-src/modules/discussion/
-src/modules/module/
-src/modules/quiz/
-
 
 
 

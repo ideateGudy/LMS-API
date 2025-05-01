@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { logger } from "./utils/logger.js";
-import { connectDb } from "./config/db.js";
+// import { connectDb } from "./config/db.js";
 
 import app from "./app.js";
 const PORT = process.env.PORT || 3000;
@@ -20,7 +20,7 @@ const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
   try {
-    connectDb();
+    // connectDb();
     logger.info(`Server is running on port ${PORT}`);
   } catch (error) {
     logger.error("Error starting server:", error);

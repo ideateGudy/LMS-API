@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 2
+    },
+    "auditLog": "C:\\Users\\HP\\Documents\\Web Development\\My Projects\\Active\\diveAfrica\\bootcamp\\new-clone\\src\\logs\\.043285f11ef98bd6d2ef799f79e85a59a80d43f5-audit.json",
+    "files": [
+        {
+            "date": 1746130800073,
+            "name": "C:\\Users\\HP\\Documents\\Web Development\\My Projects\\Active\\diveAfrica\\bootcamp\\new-clone\\src\\logs\\combined-2025-05-01.log",
+            "hash": "f1528a053e4331aaa59bf60ea498e6fe39508cbd43652e48b47a58632fdb82be"
+        }
+    ],
+    "hashType": "sha256"
+}

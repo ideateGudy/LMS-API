@@ -12,6 +12,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@prisma/client": "^6.7.0",
     "axios": "^1.8.4",
     "bcryptjs": "^3.0.2",
     "celebrate": "^15.0.3",
@@ -33,24 +34,7 @@
     "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
-    "@types/cors": "^2.8.17",
-    "@types/express": "^5.0.1",
-    "@types/express-serve-static-core": "^5.0.6",
-    "@types/hapi__joi": "^17.1.15",
-    "@types/jest": "^29.5.14",
-    "@types/joi": "^17.2.2",
-    "@types/jsonwebtoken": "^9.0.9",
-    "@types/morgan": "^1.9.9",
-    "@types/node": "^22.15.2",
-    "@types/nodemailer": "^6.4.17",
-    "@types/qs": "^6.9.18",
-    "@types/supertest": "^6.0.3",
-    "@types/swagger-jsdoc": "^6.0.4",
-    "@types/swagger-ui-express": "^4.1.8",
     "nodemon": "^3.1.10",
-    "ts-node": "^10.9.2",
-    "ts-node-dev": "^2.0.0",
-    "tsx": "^4.19.3",
-    "typescript": "^5.8.3"
+    "prisma": "^6.7.0"
   }
 }

@@ -9,6 +9,9 @@ import User from "../users/user.model.js";
 import { APIError } from "../../utils/errorClass.js";
 // import { generateOTP } from "../../utils/generateOtp.js";
 
+import { getPrismaClientSafely } from "../../lib/prismaClient.js";
+const prisma = await getPrismaClientSafely();
+
 import { sendMail } from "../../utils/sendMail.js";
 
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -56,7 +59,7 @@ export const registerUser = catchAsync(async (req, res) => {
     });
   }
 
-  const user = await User.create({ username, email, role, password });
+  const user = await prisma.create({ username, email, role, password });
 
   const { password: _, ...userWithoutPassword } = user.toObject();
 
