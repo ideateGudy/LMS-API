@@ -1,4 +1,4 @@
-import express, { Router } from "express";
+import express, { Router, RequestHandler } from "express";
 import {
   getUser,
   getUsers,
@@ -67,7 +67,7 @@ router.get("/user", getUser);
  *       404:
  *         $ref: '#/components/responses/NotFound'
  */
-router.post("/user/enroll/:courseId", validateCourse, enrollCourse);
+router.post("/user/enroll/:courseId", validateCourse as unknown as RequestHandler<{ courseId: string }>, enrollCourse);
 
 /**
  * @swagger
@@ -88,7 +88,7 @@ router.post("/user/enroll/:courseId", validateCourse, enrollCourse);
  *       404:
  *         $ref: '#/components/responses/NotFound'
  */
-router.delete("/user/unenroll/:courseId", validateCourse, unEnrollCourse);
+router.delete("/user/unenroll/:courseId", validateCourse as unknown as RequestHandler<{ courseId: string }>, unEnrollCourse);
 
 /**
  * @swagger
@@ -125,7 +125,7 @@ router.get("/user/enrolled-courses", getEnrolledCourses);
  *       500:
  *         $ref: '#/components/responses/InternalServerError'
  */
-router.put("/user/update", updateUserValidation, updateUser);
+router.put("/user/update", updateUserValidation as any, updateUser);
 
 /**
  * @swagger
@@ -147,7 +147,7 @@ router.put("/user/update", updateUserValidation, updateUser);
  *       500:
  *         $ref: '#/components/responses/InternalServerError'
  */
-router.patch("/user/change-password", updatePasswordValidation, changePassword);
+router.patch("/user/change-password", updatePasswordValidation as any, changePassword);
 
 // Admin-only routes
 /**
