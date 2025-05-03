@@ -1,4 +1,4 @@
-import { logger } from "../utils/logger.js";
+import { logger } from "../config/winston.js";
 import { APIError } from "../utils/errorClass.js";
 import jwt from "jsonwebtoken";
 import { isCelebrateError } from "celebrate";
@@ -30,7 +30,7 @@ export const globalErrorHandler = (err, req, res, next) => {
       queryError?.details?.[0]?.message ||
       "Validation failed";
 
-    return res.status(400).json({ status: false, message });
+    return res.status(400).json({ success: false, message });
   }
 
   if (err instanceof APIError) {
@@ -42,7 +42,7 @@ export const globalErrorHandler = (err, req, res, next) => {
     });
 
     return res.status(err.statusCode || 500).json({
-      status: false,
+      success: false,
       message: err.message,
     });
   }
@@ -51,39 +51,39 @@ export const globalErrorHandler = (err, req, res, next) => {
     errorHandlerLogger.error("TokenExpiredError", err);
 
     return res.status(401).json({
-      status: false,
+      success: false,
       message: "Token Expired.",
     });
   } else if (err instanceof jwt.JsonWebTokenError) {
     errorHandlerLogger.error("JsonWebTokenError", err);
     return res.status(401).json({
-      status: false,
+      success: false,
       message: "Invalid Token.",
     });
   } else if (err instanceof jwt.NotBeforeError) {
     errorHandlerLogger.error("NotBeforeError", err);
     return res.status(401).json({
-      status: false,
+      success: false,
       message: "Token not active yet.",
     });
   } else if (err.name === "ValidationError") {
     const errors = Object.values(err.errors).map((el) => el.message);
     errorHandlerLogger.error(errors.join(". ") + " Validation Error");
     return res.status(400).json({
-      status: false,
+      success: false,
       message: `Validation Error: ${errors.join(". ")}`,
     });
   } else if (err.name === "CastError") {
     errorHandlerLogger.error("CastError", err);
     return res.status(400).json({
-      status: false,
+      success: false,
       message: `Invalid ${err.path}: ${err.value}. Please provide a valid value.`,
     });
   } else if (err.code === 11000) {
     // errorHandlerLogger.error(err);
     errorHandlerLogger.error("Duplicate Key Error", err);
     return res.status(400).json({
-      status: false,
+      success: false,
       message: `Duplicate field value entered for ${Object.keys(
         err.keyValue
       )} field`,
@@ -93,7 +93,7 @@ export const globalErrorHandler = (err, req, res, next) => {
   // Handle other errors
   errorHandlerLogger.error("Internal Server Error", err);
   return res.status(err.status || 500).json({
-    status: false,
+    success: false,
     message: err.message || "Internal Server Error",
     stack: process.env.NODE_ENV === "production" ? null : err.stack,
   });
