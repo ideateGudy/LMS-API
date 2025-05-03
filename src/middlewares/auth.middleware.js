@@ -13,17 +13,19 @@ export const authenticateUser = (req, res, next) => {
   // Check if the request has an authorization header
   const authHeader = req.headers.authorization;
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+  if (!authHeader || !authHeader.startsWith("Bearer ") || !req.cookies.token) {
     authLogger.warn("Auth-Middleware: Authorization token is required");
     return next(new APIError("Authorization token is required", 401));
   }
 
   // Extract the token from the authorization header
-  const token = req.headers["authorization"]?.split(" ")[1];
+  const token =
+    req.headers["authorization"]?.split(" ")[1] || req.cookies.token;
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.userId = decoded.userId;
+    req.body.userId = decoded.userId;
     req.user = decoded;
     if (!req.userId) {
       authLogger.warn("Auth-Middleware: User not found");
