@@ -309,4 +309,4 @@ export default router;
 // POST	/api/auth/verify-otp	- Verify OTP (optional)
 // POST	/api/auth/verify-email	- Verify email with token (optional)
 // POST	/api/auth/logout	- Invalidate user session
-// POST	/api/auth/refresh	- Refresh JWT token
+// POST	/api/auth/refresh	- Refresh JWT token-

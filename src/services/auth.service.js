@@ -7,7 +7,7 @@ const authLogger = logger.child({
   logIdentifier: "Auth Controller",
 });
 
-//create user service
+//create user service-
 
 export const createUser = async (userData) => {
   const { username, email, role, password } = userData;

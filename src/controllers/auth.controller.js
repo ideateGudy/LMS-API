@@ -1,4 +1,4 @@
-//src/controllers/auth.controller.js
+//src/controllers/auth.controller.js-
 
 import { catchAsync } from "../utils/catchAsync.js";
 import { logger } from "../config/winston.js";
