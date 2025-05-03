@@ -15,28 +15,52 @@ datasource db {
 }
 
 enum Role {
-  STUDENT
-  INSTRUCTOR
-  ADMIN
+  student
+  instructor
+  admin
 }
 
 enum SubmissionMode {
-  LINK
-  FILE
+  link
+  file
 }
 
 enum SubmissionStatus {
-  PENDING
-  IN_PROGRESS
-  DONE
+  pending
+  in_progress
+  done
 }
 
 model User {
   id              String                  @id @default(uuid())
   email           String                  @unique
-  username        String                  @unique
+  fullName        String
   password        String
-  role            Role                    @default(STUDENT)
+  firstName       String
+  role            Role                    @default(student)
+
+  // Optional fields
+  profilePicture  String?
+  bio             String?
+  lastName        String?
+  gender         String?
+  age            Int?
+  phoneNumber     String?
+  country         String?
+  city            String?
+  Highest_Level_Of_Education String?
+  ocupation      String?
+  employment_Status String?
+  time_commitment String?
+  learning_goals String?
+  certificate_in_tech String?
+  course_certificate          String?
+  course_institution String?
+  skill_intended_to_learn String?
+  previous_experience String?
+  level_of_experience String?
+  device_type String?
+  how_did_you_hear_about_us String?
   createdAt       DateTime                @default(now())
   updatedAt       DateTime                @updatedAt
 
@@ -49,6 +73,9 @@ model User {
   comments        Comment[]
   replies         Reply[]
   notifications   Notification[]
+
+  @@map("users")
+  @@index([email], name: "idx_user_email")
 }
 
 model Course {
@@ -81,6 +108,10 @@ model Course {
   discussions             Discussion[]
   assignments             Assignment[]
   progress                CourseProgress[]
+
+  @@map("courses")
+  @@index([title], name: "idx_course_title")
+  @@index([category], name: "idx_course_category")
 }
 
 model Module {
@@ -99,6 +130,8 @@ model Module {
   lessons            Lesson[]
   assignments        Assignment[]
   discussions        Discussion[]
+
+  @@map("modules")
 }
 
 model Lesson {
@@ -117,6 +150,8 @@ model Lesson {
   assignments Assignment[]
   comments    Comment[]
   progress    LessonProgress[]
+
+  @@map("lessons")
 }
 
 model CourseProgress {
@@ -128,6 +163,7 @@ model CourseProgress {
 
   course    Course   @relation(fields: [courseId], references: [id])
   courseId  String
+
 }
 
 model LessonProgress {
@@ -157,12 +193,14 @@ model Assignment {
   lesson      Lesson?    @relation(fields: [lessonId], references: [id])
   lessonId    String?
   submissions AssignmentSubmission[]
+
+  @@map("assignments")
 }
 
 model AssignmentSubmission {
   id            String           @id @default(uuid())
   content       String
-  status        SubmissionStatus @default(PENDING)
+  status        SubmissionStatus @default(pending)
   grade         Int?
   createdAt     DateTime         @default(now())
 
@@ -171,6 +209,8 @@ model AssignmentSubmission {
   assignmentId  String
   student       User             @relation(fields: [studentId], references: [id])
   studentId     String
+
+  @@map("assignment_submissions")
 }
 
 model Comment {
@@ -185,6 +225,8 @@ model Comment {
   discussion   Discussion?  @relation(fields: [discussionId], references: [id])
   discussionId String?
   replies      Reply[]
+
+  @@map("comments")
 }
 
 model Reply {
@@ -196,6 +238,8 @@ model Reply {
   commentId  String
   author     User     @relation(fields: [authorId], references: [id])
   authorId   String
+
+  @@map("replies")
 }
 
 model Discussion {
@@ -207,6 +251,8 @@ model Discussion {
   module     Module?    @relation(fields: [moduleId], references: [id])
   moduleId   String?
   comments   Comment[]
+
+  @@map("discussions")
 }
 
 model Notification {
@@ -216,4 +262,6 @@ model Notification {
 
   user      User     @relation(fields: [userId], references: [id])
   userId    String
+
+  @@map("notifications")
 }

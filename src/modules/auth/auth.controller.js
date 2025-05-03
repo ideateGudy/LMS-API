@@ -9,8 +9,11 @@ import User from "../users/user.model.js";
 import { APIError } from "../../utils/errorClass.js";
 // import { generateOTP } from "../../utils/generateOtp.js";
 
-import { getPrismaClientSafely } from "../../lib/prismaClient.js";
-const prisma = await getPrismaClientSafely();
+// import { getPrismaClientSafely } from "../../lib/prismaClient.js";
+// const prisma = await getPrismaClientSafely();
+
+import { PrismaClient } from "../../../generated/prisma/client.js";
+const prisma = new PrismaClient();
 
 import { sendMail } from "../../utils/sendMail.js";
 
@@ -40,9 +43,13 @@ export const registerUser = catchAsync(async (req, res) => {
     });
   }
 
-  const existingUser = await User.findOne({
-    $or: [{ username }, { email }],
+  const existingUser = await prisma.user.findFirst({
+    where: {
+      OR: [{ username: username }, { email: email }],
+    },
   });
+
+  console.log("Existing user:", existingUser);
   if (existingUser?.username === username) {
     authLogger.warn("User already exists with this username");
     throw new APIError(
@@ -59,9 +66,16 @@ export const registerUser = catchAsync(async (req, res) => {
     });
   }
 
-  const user = await prisma.create({ username, email, role, password });
+  const user = await prisma.user.create({
+    data: {
+      username,
+      email,
+      role,
+      password,
+    },
+  });
 
-  const { password: _, ...userWithoutPassword } = user.toObject();
+  const { password: _, ...userWithoutPassword } = user;
 
   res.status(201).json({
     message: "User registered successfully",
