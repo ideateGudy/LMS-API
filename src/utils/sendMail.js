@@ -1,24 +1,8 @@
-import nodemailer from "nodemailer";
-import "dotenv/config";
-
-const transporter = nodemailer.createTransport({
-  service: "Gmail",
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
-
-  auth: {
-    user: process.env.EMAIL_USER, // Your email
-    pass: process.env.EMAIL_PASS, // Your email app password
-  },
-  tls: {
-    rejectUnauthorized: false,
-  },
-});
+import { transporter } from "../config/nodemailer.js";
 
 export const sendOTP = async (email, otp) => {
   const mailOptions = {
-    from: '"Support" <support@gudymedia.com>',
+    from: "diveAfrica",
     to: email,
     subject: "Your OTP Code",
     // text: `Your OTP code is: ${otp}. It will expire in 5 minutes.`,
@@ -46,7 +30,7 @@ export const sendOTP = async (email, otp) => {
             <div class="otp-code">${otp}</div>
             <p>If you did not request this OTP, please ignore this email.</p>
             <div class="footer">
-                &copy; 2025 Gudy Media. All rights reserved.
+                &copy; 2025 Dive Africa. All rights reserved.
             </div>
         </div>
         </body>
@@ -88,7 +72,7 @@ export const sendMail = async (email, subject, message) => {
             <h1>${subject}</h1>
             <p>${message}</p>
             <div class="footer">
-                &copy; 2025 Gudy Media. All rights reserved.
+                &copy; 2025 Dive Africa. All rights reserved.
             </div>
         </div>
         </body>

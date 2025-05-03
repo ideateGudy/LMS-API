@@ -3,6 +3,6 @@ node_modules
 generated/prisma/
 note.md
 logs
-
+prisma/migrations
 
 
