@@ -34,14 +34,14 @@ enum SubmissionStatus {
 model User {
   id              String                  @id @default(uuid())
   email           String                  @unique
-  fullName        String
+  username        String                  @unique
   password        String
-  firstName       String
   role            Role                    @default(student)
 
   // Optional fields
   profilePicture  String?
   bio             String?
+  firstName       String?
   lastName        String?
   gender         String?
   age            Int?
@@ -76,6 +76,7 @@ model User {
 
   @@map("users")
   @@index([email], name: "idx_user_email")
+  @@index([username], name: "idx_user_name")
 }
 
 model Course {
