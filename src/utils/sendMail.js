@@ -39,7 +39,6 @@ export const sendOTP = async (email, otp) => {
   };
   try {
     const info = await transporter.sendMail(mailOptions);
-    console.log(`OTP sent to ${email} | Message ID: ${info.messageId}`);
     return email;
   } catch (err) {
     console.error("Failed to send OTP:", err);
@@ -49,7 +48,7 @@ export const sendOTP = async (email, otp) => {
 
 export const sendMail = async (email, subject, message) => {
   const mailOptions = {
-    from: '"Reset Password" <support@gudymedia.com>',
+    from: '"Reset Password" <support@diveafrica.com>',
     to: email,
     subject: subject,
     html: `
@@ -81,7 +80,6 @@ export const sendMail = async (email, subject, message) => {
   };
   try {
     const info = await transporter.sendMail(mailOptions);
-    console.log(`Email sent to ${email} | Message ID: ${info.messageId}`);
     return email;
   } catch (err) {
     console.error("Failed to send email:", err);

@@ -2,29 +2,32 @@ import jwt from "jsonwebtoken";
 // import { APIError } from "./errorClass.js";
 // import {logger} from "./logger.js"
 
-const JWT_SECRET = process.env.JWT_SECRET;
+const EMAIL_JWT_SECRET = process.env.EMAIL_JWT_SECRET;
+const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
+const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
+const ACCESS_TOKEN_EXPIRES = process.env.ACCESS_TOKEN_EXPIRES;
+const REFRESH_TOKEN_EXPIRES = process.env.REFRESH_TOKEN_EXPIRES;
 
-export const generateToken = (user, exAccess, exRefresh) => {
-  const refreshToken = jwt.sign(
+export const generateAccessToken = (user, sessionId, aud) => {
+  return jwt.sign(
     {
       userId: user.id,
       username: user.username,
       role: user.role,
+      sessionId,
     },
-    JWT_SECRET,
-    { expiresIn: exRefresh || "15m" }
+    ACCESS_TOKEN_SECRET,
+    { audience: [`${aud}`], expiresIn: ACCESS_TOKEN_EXPIRES || "15m" }
   );
-  const accessToken = jwt.sign(
+};
+export const generateRefreshToken = (sessionId, aud) => {
+  return jwt.sign(
     {
-      userId: user.id,
-      username: user.username,
-      role: user.role,
+      sessionId,
     },
-    JWT_SECRET,
-    { expiresIn: exAccess || "10d" }
+    REFRESH_TOKEN_SECRET,
+    { audience: [`${aud}`], expiresIn: REFRESH_TOKEN_EXPIRES || "10d" }
   );
-
-  return { refreshToken, accessToken };
 };
 
 export const generateEmailToken = (user, expires) => {
@@ -32,7 +35,7 @@ export const generateEmailToken = (user, expires) => {
     {
       userId: user.id,
     },
-    JWT_SECRET,
+    EMAIL_JWT_SECRET,
     { expiresIn: expires || "5m" }
   );
 };
