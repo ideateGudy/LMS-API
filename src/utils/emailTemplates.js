@@ -10,7 +10,7 @@ export const getPasswordResetTemplate = (url) => ({
   <title>Password Reset</title>
   <style>
     body {
-      background: #f0f4f8;
+      background: #A1A9DF;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       margin: 0;
       padding: 0;
@@ -24,7 +24,7 @@ export const getPasswordResetTemplate = (url) => ({
       box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
     }
     .header {
-      background-color: #f97316;
+      background-color: #4A5497;
       color: white;
       padding: 20px;
       border-radius: 12px 12px 0 0;
@@ -42,7 +42,7 @@ export const getPasswordResetTemplate = (url) => ({
       display: inline-block;
       margin-top: 20px;
       padding: 12px 24px;
-      background-color: #2563eb;
+      background-color: #5763AE;
       color: white;
       text-decoration: none;
       border-radius: 8px;
@@ -50,7 +50,7 @@ export const getPasswordResetTemplate = (url) => ({
       transition: background 0.3s ease;
     }
     .button:hover {
-      background-color: #1d4ed8;
+      background-color: #3C457B;
     }
     .footer {
       text-align: center;
@@ -70,6 +70,7 @@ export const getPasswordResetTemplate = (url) => ({
       <p>We received a request to reset your password for your Dive Africa LMS account.</p>
       <p>If you made this request, click the button below to reset your password:</p>
       <p><a href="${url}" class="button">Reset Password</a></p>
+      <p style="background-color: #5763AE; color: #FFF;">This link expires in 5 minutes</p>
       <p>If you didn’t request this, you can safely ignore this email. Your password will remain unchanged.</p>
       <p>Thank you,<br>The Dive Africa Team</p>
     </div>
@@ -94,7 +95,7 @@ export const sendActivationCodeTemplate = (activationCode) => ({
   <title>Activate Your Account</title>
   <style>
     body {
-      background: #f0f4f8;
+      background: #A1A9DF;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       padding: 0;
       margin: 0;
@@ -108,7 +109,7 @@ export const sendActivationCodeTemplate = (activationCode) => ({
       box-shadow: 0 8px 16px rgba(0,0,0,0.1);
     }
     .header {
-      background: #4f46e5;
+      background: #4A5497;
       padding: 20px;
       border-radius: 12px 12px 0 0;
       text-align: center;
@@ -126,7 +127,7 @@ export const sendActivationCodeTemplate = (activationCode) => ({
       font-size: 32px;
       font-weight: bold;
       background: #e0f2fe;
-      color: #0284c7;
+      color: #4F5999;
       padding: 15px;
       border-radius: 8px;
       text-align: center;
@@ -136,7 +137,7 @@ export const sendActivationCodeTemplate = (activationCode) => ({
     .footer {
       margin-top: 30px;
       text-align: center;
-      color: #666666;
+      color: #B7BAC7;
       font-size: 14px;
     }
   </style>
@@ -150,7 +151,7 @@ export const sendActivationCodeTemplate = (activationCode) => ({
       <p>Hi there,</p>
       <p>To complete your account setup, please use the OTP code below:</p>
       <div class="otp-code">${activationCode}</div>
-      <p>This code is valid for 5 minutes. Do not share it with anyone.</p>
+      <p style="background-color: #5763AE; color: #FFF; padding: 20px; border-radius: 0 0 12px 12px ; text-align: center; ">This code is valid for 5 minutes. Do not share it with anyone.</p>
       <p>Thanks for joining us. We’re excited to have you on board!</p>
     </div>
     <div class="footer">
