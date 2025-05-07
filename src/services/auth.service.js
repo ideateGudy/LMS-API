@@ -43,7 +43,7 @@ const createActivationToken = (user) => {
 //verifyUserData
 const verifyUserData = async (userData) => {
   const { username, email, role, password } = userData;
-  if ((!username && !email) || !role || !password) {
+  if (!username || !email || !role || !password) {
     authLogger.warn("All fields are required");
     throw new APIError("All fields are required");
   }
