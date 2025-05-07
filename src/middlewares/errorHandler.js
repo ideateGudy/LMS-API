@@ -2,6 +2,7 @@ import { logger } from "../config/winston.js";
 import { APIError } from "../utils/errorClass.js";
 import jwt from "jsonwebtoken";
 import { isCelebrateError } from "celebrate";
+import { clearAuthCookies, REFRESH_PATH } from "../utils/setCookie.js";
 
 const errorHandlerLogger = logger.child({
   logIdentifier: "Global Error Handler Middleware",
@@ -9,13 +10,12 @@ const errorHandlerLogger = logger.child({
 
 export const globalErrorHandler = (err, req, res, next) => {
   // if (process.env.NODE_ENV === "development") {
-  //   errorHandlerLogger.error("APIError", {
-  //     message: err.message,
-  //     statusCode: err.statusCode,
-  //     name: err.name,
-  //     stack: err.stack,
-  //   });
+  //   errorHandlerLogger.error("Error Handler", err.stack);
   // }
+
+  if (req.path === REFRESH_PATH) {
+    clearAuthCookies(res);
+  }
 
   // Joi validation error
   if (isCelebrateError(err)) {
@@ -52,7 +52,7 @@ export const globalErrorHandler = (err, req, res, next) => {
 
     return res.status(401).json({
       success: false,
-      message: "Token Expired.",
+      message: "Token Expired",
     });
   } else if (err instanceof jwt.JsonWebTokenError) {
     errorHandlerLogger.error("JsonWebTokenError", err);
@@ -66,27 +66,61 @@ export const globalErrorHandler = (err, req, res, next) => {
       success: false,
       message: "Token not active yet.",
     });
-  } else if (err.name === "ValidationError") {
-    const errors = Object.values(err.errors).map((el) => el.message);
-    errorHandlerLogger.error(errors.join(". ") + " Validation Error");
-    return res.status(400).json({
+  }
+  //Prisma errors
+  if (err.code === "P2002") {
+    errorHandlerLogger.error("Prisma Error", err);
+    return res.status(409).json({
       success: false,
-      message: `Validation Error: ${errors.join(". ")}`,
+      message: `Duplicate: Unique constraint failed on the ${err.meta.target}`,
     });
-  } else if (err.name === "CastError") {
-    errorHandlerLogger.error("CastError", err);
-    return res.status(400).json({
+  } else if (err.code === "P2025") {
+    errorHandlerLogger.error("Prisma Error", err);
+    return res.status(404).json({
       success: false,
-      message: `Invalid ${err.path}: ${err.value}. Please provide a valid value.`,
+      message: `Requested record not found or already deleted.`,
     });
-  } else if (err.code === 11000) {
-    // errorHandlerLogger.error(err);
-    errorHandlerLogger.error("Duplicate Key Error", err);
+  } else if (err.code === "P2003") {
+    errorHandlerLogger.error("Prisma Error", err);
     return res.status(400).json({
       success: false,
-      message: `Duplicate field value entered for ${Object.keys(
-        err.keyValue
-      )} field`,
+      message: `Invalid relation or referenced record does not exist.`,
+    });
+  } else if (err.code === "P2016") {
+    errorHandlerLogger.error("Prisma Error", err);
+    return res.status(400).json({
+      success: false,
+      message: `The provided value for the column is too long for the column's type.`,
+    });
+  } else if (err.code === "P2021") {
+    errorHandlerLogger.error("Prisma Error", err);
+    return res.status(400).json({
+      success: false,
+      message: `The provided value for the column is not valid.`,
+    });
+  } else if (err.code === "P2000") {
+    errorHandlerLogger.error("Prisma Error", err);
+    return res.status(400).json({
+      success: false,
+      message: `The provided value for the column is not valid.`,
+    });
+  } else if (err.code === "P2018") {
+    errorHandlerLogger.error("Prisma Error", err);
+    return res.status(400).json({
+      success: false,
+      message: `The provided value for the column is not valid.`,
+    });
+  } else if (err.code === "P2024") {
+    errorHandlerLogger.error("Prisma Error", err);
+    return res.status(400).json({
+      success: false,
+      message: `The provided value for the column is not valid.`,
+    });
+  } else if (err.code === "P2023") {
+    errorHandlerLogger.error("Prisma Error", err);
+    return res.status(400).json({
+      success: false,
+      message: `The provided value for the column is not valid.`,
     });
   }
 
