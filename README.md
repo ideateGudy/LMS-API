@@ -1,6 +1,6 @@
 # 🌍 LMS
 
-This is a modern, Learning Management System (LMS) built to empower students and instructors across Africa with scalable, real-time, and engaging online education. This project is structured as a modular monolith architecture using Node.js, Express and MongoDB.
+This is a modern, Learning Management System (LMS) built to empower students and instructors across Africa with scalable, real-time, and engaging online education.
 
 ---
 
@@ -26,13 +26,19 @@ This is a modern, Learning Management System (LMS) built to empower students and
 ```bash
 
 src/
-├── modules/              # Feature-based modules (auth, users, courses, etc.)
+├── controllers/          #Controllers
+├── routes/               #Routes
+├── services/             #Services
+├── validators/           #Validators
+├── lib/                  #Lib
 ├── middleware/           # Auth & error handling middleware
 ├── utils/                # Shared helpers (email, logger, etc.)
 ├── config/               # DB setup
 ├── logs/                 # App logs
+________
 ├── app.js                # Express app setup
 ├── server.js             # App entry point
+├── swagger.js            # Documentation
 
 
 ```
