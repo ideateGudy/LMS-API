@@ -12,16 +12,16 @@ import { globalErrorHandler } from "./middlewares/errorHandler.js";
 import { APIError } from "./utils/errorClass.js";
 
 //Authentication Middleware
-// import { authenticateUser } from "./middlewares/auth.middleware.js";
+import { authenticateUser } from "./middlewares/auth.middleware.js";
 
 //initialize express app
 const app = express();
 
 // Import routes
-import authRoutes from "./routes/auth.routes.js";
-// import userRoutes from "./modules/users/user.routes.js";
-// import courseRoutes from "./modules/courses/course.routes.js";
-// import progressRoutes from "./modules/progress/progress.routes.js";
+import authRouter from "./routes/auth.routes.js";
+import userRouter from "./routes/user.routes.js";
+import courseRouter from "./routes/course.routes.js";
+// import progressRouter from "./modules/progress/progress.routes.js";
 
 //Middlewares
 app.use(cors());
@@ -34,10 +34,10 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(morganMiddleware);
 
 // Mount all routes
-app.use("/api/auth", authRoutes);
-// app.use("/api/users", authenticateUser, userRoutes);
-// app.use("/api/courses", courseRoutes);
-// app.use("/api/progress", authenticateUser, progressRoutes);
+app.use("/api/auth", authRouter);
+app.use("/api/users", authenticateUser, userRouter);
+app.use("/api/courses", courseRouter);
+// app.use("/api/progress", authenticateUser, progressRouter);
 
 app.get("/", (_req, res) => {
   res.send("Welcome to the Dive Africa LMS API 🎓");
