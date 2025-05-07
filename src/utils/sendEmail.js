@@ -13,7 +13,7 @@ const getToEmail = () =>
 export const sendEmail = async ({ to, subject, html, text }) => {
   return await resend.emails.send({
     from: getFromEmail(),
-    to: getToEmail(to),
+    to: to || getToEmail(to),
     subject,
     html,
     text,
