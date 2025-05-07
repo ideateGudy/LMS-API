@@ -1,6 +1,21 @@
 import { celebrate, Segments } from "celebrate";
 import Joi from "joi";
 
+export const verficationValidation = celebrate({
+  [Segments.BODY]: Joi.object({
+    activation_token: Joi.string().required().messages({
+      "string.base": "Activation token must be a string",
+      "string.empty": "Activation token is required",
+      "any.required": "Activation token is required",
+    }),
+    activation_code: Joi.string().required().messages({
+      "string.base": "Activation code must be a string",
+      "string.empty": "Activation code is required",
+      "any.required": "Activation code is required",
+    }),
+  }),
+});
+
 export const registerValidation = celebrate({
   [Segments.BODY]: Joi.object({
     username: Joi.string()

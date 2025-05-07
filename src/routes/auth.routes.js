@@ -4,10 +4,13 @@ import {
   loginValidation,
   forgotPasswordValidation,
   resetPasswordValidation,
+  verficationValidation,
 } from "../validators/auth.validator.js";
 import {
+  verificationCode,
   register,
   loginUser,
+  refreshTokenController,
   forgotPassword,
   resetPassword,
   // resetPasswordGet,
@@ -22,6 +25,8 @@ const router = express.Router();
  *     description: Authentication and authorization routes
  */
 
+//TODO: docs required here
+router.post("/otp-code", registerValidation, verificationCode);
 /**
  * @swagger
  * /api/auth/register:
@@ -89,8 +94,8 @@ const router = express.Router();
  *                   type: string
  *                   description: Error message
  */
+router.post("/register", verficationValidation, register);
 
-router.post("/register", registerValidation, register);
 /**
  * @swagger
  * /api/auth/login:
@@ -149,8 +154,10 @@ router.post("/register", registerValidation, register);
  *                   type: string
  *                   description: Error message
  */
-
 router.post("/login", loginValidation, loginUser);
+
+// Route for refreshing the access token
+router.get("/refresh-token", refreshTokenController);
 
 /**
  * @swagger
@@ -218,7 +225,6 @@ router.post("/login", loginValidation, loginUser);
  *                   description: Error message
  *                   example: "User not found with this email"
  * */
-
 router.post("/forgot-password", forgotPasswordValidation, forgotPassword);
 
 /**
@@ -294,7 +300,6 @@ router.post("/forgot-password", forgotPasswordValidation, forgotPassword);
  *                   description: Error message
  *                   example: "User not found with the token"
  */
-
 router.post("/reset-password", resetPasswordValidation, resetPassword);
 
 // router.get("/reset-password", resetPasswordGet);
