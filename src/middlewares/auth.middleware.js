@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { logger } from "../utils/logger.js";
+import { logger } from "../config/winston.js";
 import { APIError } from "../utils/errorClass.js";
 
 const authLogger = logger.child({
@@ -13,20 +13,20 @@ export const authenticateUser = (req, res, next) => {
   // Check if the request has an authorization header
   const authHeader = req.headers.authorization;
 
-  if (!authHeader || !authHeader.startsWith("Bearer ") || !req.cookies.token) {
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
     authLogger.warn("Auth-Middleware: Authorization token is required");
     return next(new APIError("Authorization token is required", 401));
   }
 
   // Extract the token from the authorization header
-  const token =
-    req.headers["authorization"]?.split(" ")[1] || req.cookies.token;
+  const accessToken = req.headers["authorization"]?.split(" ")[1];
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
+    const date = new Date(decoded.exp * 1000);
+
     req.userId = decoded.userId;
-    req.body.userId = decoded.userId;
-    req.user = decoded;
+    req.role = decoded.role; // Attach the user object to the request
     if (!req.userId) {
       authLogger.warn("Auth-Middleware: User not found");
       return next(new APIError("User not found", 404));
@@ -43,7 +43,7 @@ export const authenticateUser = (req, res, next) => {
 export const authorize =
   (...roles) =>
   (req, res, next) => {
-    if (!roles.includes(req.user.role)) {
+    if (!roles.includes(req.role)) {
       return res
         .status(403)
         .json({ status: false, message: "Forbidden: Access denied" });
