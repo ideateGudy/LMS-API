@@ -84,3 +84,55 @@ export const updatePasswordValidation = celebrate({
       }),
   }),
 });
+
+export const getUsersValidator = celebrate({
+  [Segments.QUERY]: Joi.object({
+    page: Joi.number().integer().min(1).default(1).messages({
+      "number.base": "Page must be a number",
+      "number.integer": "Page must be an integer",
+      "number.min": "Page must be at least 1",
+    }),
+    limit: Joi.number().integer().min(1).max(100).default(10).messages({
+      "number.base": "Limit must be a number",
+      "number.integer": "Limit must be an integer",
+      "number.min": "Limit must be at least 1",
+      "number.max": "Limit must not exceed 100",
+    }),
+    sortBy: Joi.string()
+      .valid("username", "email", "role", "createdAt")
+      .default("email")
+      .messages({
+        "any.only":
+          "Sort by must be one of the following: username, email, role, createdAt",
+      }),
+    sortOrder: Joi.string().valid("asc", "desc").default("asc").messages({
+      "any.only": "Sort order must be either 'asc' or 'desc'",
+    }),
+    search: Joi.string().optional().messages({
+      "string.base": "Search must be a string",
+    }),
+    isDeactivated: Joi.boolean().optional().messages({
+      "boolean.base": "isDeactivated must be a boolean",
+      "any.required": "isDeactivated is required",
+      "string.empty": "isDeactivated cannot be empty",
+      "any.required": "isDeactivated is required",
+      "string.base": "isDeactivated must be a string",
+      "any.only": "isDeactivated must be either 'true' or 'false'",
+    }),
+    username: Joi.string().optional().messages({
+      "string.base": "Username must be a string",
+      "string.empty": "Username cannot be empty",
+      "any.required": "Username is required",
+    }),
+    email: Joi.string().optional().messages({
+      "string.base": "Email must be a string",
+      "string.empty": "Email cannot be empty",
+      "any.required": "Email is required",
+    }),
+    role: Joi.string().optional().messages({
+      "string.base": "Role must be a string",
+      "string.empty": "Role cannot be empty",
+      "any.required": "Role is required",
+    }),
+  }),
+});
