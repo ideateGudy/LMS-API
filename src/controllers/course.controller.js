@@ -1,5 +1,3 @@
-// import Course from "./course.model.js";
-// import User from "../users/user.model.js";
 import { APIError } from "../utils/errorClass.js";
 import { catchAsync } from "../utils/catchAsync.js";
 import { logger } from "../config/winston.js";
@@ -16,6 +14,10 @@ export const createCourse = catchAsync(async (req, res) => {
   const courseData = req.body;
 
   const course = await createNewCourseService(courseData, userId);
+  if (!course) {
+    courseLogger.error("Course creation failed", { userId });
+    throw new APIError("Course creation failed", 500);
+  }
 
   res.status(201).json({
     success: true,
@@ -53,7 +55,11 @@ export const getCourses = catchAsync(async (req, res) => {
     });
   }
 
-  res.status(200).json({ success: true, data: result });
+  res.status(200).json({
+    success: true,
+    message: "Courses retrieved successfully",
+    data: result,
+  });
 });
 
 export const getCourseById = catchAsync(async (req, res) => {
@@ -97,18 +103,39 @@ export const getCourseById = catchAsync(async (req, res) => {
 
 export const getMyCourses = catchAsync(async (req, res) => {
   const userId = req.userId;
-  console.log("-------here-------------");
-  const courses = await prisma.course.findMany({
-    where: {
-      createdBy: userId,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
-  console.log("-----------Courses", courses);
+  // const courses = await prisma.course.findMany({
+  //   where: {
+  //     createdBy: userId,
+  //   },
+  //   orderBy: {
+  //     createdAt: "desc",
+  //   },
+  // });
 
-  if (!courses || courses.length === 0) {
+  const {
+    category,
+    skillLevel,
+    search = "",
+    page = 1,
+    limit = 10,
+    sortBy = "createdAt",
+    sortOrder = "desc",
+  } = req.query;
+
+  const result = await getAllCoursesService(
+    {
+      category,
+      skillLevel,
+      search,
+      page: parseInt(page),
+      limit: parseInt(limit),
+      sortBy,
+      sortOrder,
+    },
+    userId
+  );
+
+  if (result.count === 0) {
     return res.status(200).json({
       success: true,
       message: "You have not created any course yet",
@@ -119,6 +146,6 @@ export const getMyCourses = catchAsync(async (req, res) => {
   res.status(200).json({
     success: true,
     message: "Courses fetched successfully",
-    data: { count: courses.length, courses },
+    data: { count: result.length, result },
   });
 });

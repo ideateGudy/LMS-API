@@ -6,6 +6,37 @@ const courseServiceLogger = logger.child({
   logIdentifier: "Auth Service",
 });
 
+// Check if the user is enrolled in the course
+//  const isEnrolled = courses.some((course) => course.id === courseId);
+
+//Check if user is enrolled to course
+export const isEnrolled = async (userId, courseId) => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      role: true,
+      enrolledCourses: {
+        select: { id: true },
+      },
+      coursesCreatedByUser: {
+        select: { id: true },
+      },
+    },
+  });
+
+  if (!user) throw new APIError("User not found", 404);
+
+  const isOwner = user.coursesCreatedByUser.some(
+    (course) => course.id === courseId
+  );
+  const isStudent = user.enrolledCourses.some(
+    (course) => course.id === courseId
+  );
+
+  return { isOwner, isStudent, user };
+};
+
 export const createNewCourseService = async (courseData, userId) => {
   const { title, description, category, skillLevel, modules } = courseData;
 
@@ -61,15 +92,18 @@ export const createNewCourseService = async (courseData, userId) => {
   return course;
 };
 
-export const getAllCoursesService = async ({
-  category,
-  skillLevel,
-  search = "",
-  page = 1,
-  limit = 10,
-  sortBy = "createdAt",
-  sortOrder = "desc",
-}) => {
+export const getAllCoursesService = async (
+  {
+    category,
+    skillLevel,
+    search = "",
+    page = 1,
+    limit = 10,
+    sortBy = "createdAt",
+    sortOrder = "desc",
+  },
+  userId
+) => {
   const filters = {};
   if (category) filters.category = category;
   if (skillLevel) filters.skillLevel = skillLevel;
@@ -80,8 +114,12 @@ export const getAllCoursesService = async ({
   const whereClause = {
     ...filters,
     OR: search
-      ? [{ title: { contains: search } }, { description: { contains: search } }]
+      ? [
+          { title: { contains: search } },
+          { description: { contains: search }, createdBy: userId },
+        ]
       : undefined,
+    createdBy: userId,
   };
 
   const [courses, total] = await Promise.all([
@@ -118,8 +156,9 @@ export const getAllCoursesService = async ({
   return {
     pagination: {
       currentPage: page,
+      limit,
+      pageSize: courses.length,
       totalPages,
-      pageSize: limit,
     },
     count: total,
     courses,
