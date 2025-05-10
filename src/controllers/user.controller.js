@@ -79,10 +79,17 @@ export const getUsers = catchAsync(async (req, res) => {
   // Success response with paginated data
   return res.status(200).json({
     success: true,
-    count: result.total,
-    currentPage: result.page,
-    totalPages: result.totalPages,
-    data: { users },
+    message: "Users retrieved successfully",
+    data: {
+      pagination: {
+        currentPage: result.page,
+        limit: parseInt(limit),
+        pageSize: result.users.length,
+        totalPages: result.totalPages,
+      },
+      count: result.total,
+      users,
+    },
   });
 });
 
@@ -117,9 +124,9 @@ export const unEnrollCourse = catchAsync(async (req, res) => {
 export const getEnrolledCourses = catchAsync(async (req, res) => {
   const userId = req.userId;
 
-  const user = await getEnrolledCourses_S(userId);
+  const courses = await getEnrolledCourses_S(userId);
 
-  if (user.enrolledCourses.length === 0) {
+  if (courses.length === 0) {
     return res.status(200).json({
       success: true,
       message: "No enrolled courses",
@@ -129,9 +136,9 @@ export const getEnrolledCourses = catchAsync(async (req, res) => {
 
   res.status(200).json({
     success: true,
-    count: user.enrolledCourses.length,
+    count: courses.length,
     data: {
-      courses: user.enrolledCourses,
+      courses,
     },
   });
 });
@@ -139,6 +146,11 @@ export const getEnrolledCourses = catchAsync(async (req, res) => {
 export const updateUser = catchAsync(async (req, res) => {
   const userId = req.userId;
   const { id, role, password, ...restData } = req.body;
+
+  // Ccheck if user is trying to update id, role or password
+  if (id || role || password) {
+    throw new APIError("You cannot update id, role or password", 400);
+  }
 
   const updatedUser = await updateUserInfo_S(userId, restData);
 

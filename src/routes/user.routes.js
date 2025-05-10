@@ -15,6 +15,7 @@ import {
   validateCourse,
   updateUserValidation,
   updatePasswordValidation,
+  getUsersValidator,
 } from "../validators/user.validator.js";
 
 const router = express.Router();
@@ -31,279 +32,22 @@ const router = express.Router();
  * @swagger
  * /api/users/user:
  *   get:
- *     summary: Get the authenticated user's profile
- *     tags: [User]
+ *     summary: Retrieve the authenticated user's profile data.
+ *     tags:
+ *       - User
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Successfully retrieved the user's profile
+ *         description: Returns the user's profile data.
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 status:
+ *                 success:
  *                   type: boolean
  *                   example: true
- *                 data:
- *                   type: object
- *                   properties:
- *                     user:
- *                       type: object
- *                       properties:
- *                         _id:
- *                           type: string
- *                         email:
- *                           type: string
- *                         name:
- *                           type: string
- *                         role:
- *                           type: string
- *                         courses:
- *                           type: array
- *                           items:
- *                             type: object
- *                       example:
- *                         _id: "60d0fe4f5311236168a109ca"
- *                         email: "user@example.com"
- *                         name: "John Doe"
- *                         role: "student"
- *                         courses: []
- *       404:
- *         description: User not found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "User not found"
- *       500:
- *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Internal server error"
- */
-router.get("/user", getUser);
-
-/**
- * @swagger
- * /api/users/user/enroll/{courseId}:
- *   post:
- *     summary: Enroll in a course
- *     description: Enroll the user in a course specified by the `courseId`.
- *     security:
- *       - bearerAuth: []
- *     tags: [User]
- *     parameters:
- *       - name: courseId
- *         in: path
- *         required: true
- *         description: The ID of the course to enroll in
- *         type: string
- *     responses:
- *       200:
- *         description: Successfully enrolled in the course
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: "Successfully enrolled in course"
- *       400:
- *         description: Already enrolled in this course
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   example: false
- *                 message:
- *                   type: string
- *                   example: "Already enrolled in this course"
- *       404:
- *         description: Course or user not found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   example: false
- *                 message:
- *                   type: string
- *                   example: "Course or user not found"
- */
-router.post("/user/enroll/:courseId", validateCourse, enrollCourse);
-
-/**
- * @swagger
- * /api/users/user/unenroll/{courseId}:
- *   delete:
- *     summary: Unenroll from a course
- *     description: Unenroll the user from a course specified by the `courseId`.
- *     security:
- *       - bearerAuth: []
- *     tags: [User]
- *     parameters:
- *       - name: courseId
- *         in: path
- *         required: true
- *         description: The ID of the course to unenroll from
- *         type: string
- *     responses:
- *       200:
- *         description: Successfully unenrolled from the course
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: "Successfully unenrolled from course"
- *       400:
- *         description: Not enrolled in this course
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   example: false
- *                 message:
- *                   type: string
- *                   example: "Not enrolled in this course"
- *       404:
- *         description: Course or user not found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   example: false
- *                 message:
- *                   type: string
- *                   example: "Course or user not found"
- */
-//un enroll for course
-router.delete("/user/unenroll/:courseId", validateCourse, unEnrollCourse);
-
-/**
- * @swagger
- * /api/users/user/enrolled-courses:
- *   get:
- *     summary: Get enrolled courses
- *     description: Fetch a list of courses that the user is enrolled in.
- *     security:
- *       - bearerAuth: []
- *     tags: [User]
- *     responses:
- *       200:
- *         description: Successfully retrieved enrolled courses
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   example: true
- *                 data:
- *                   type: object
- *                   properties:
- *                     courses:
- *                       type: array
- *                       items:
- *                         type: object
- *                         properties:
- *                           _id:
- *                             type: string
- *                           title:
- *                             type: string
- *                           description:
- *                             type: string
- *                           category:
- *                             type: string
- *                           skillLevel:
- *                             type: string
- *                           createdBy:
- *                             type: string
- *                           createdAt:
- *                             type: string
- *                             format: date-time
- *       404:
- *         description: No enrolled courses found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   example: false
- *                 message:
- *                   type: string
- *                   example: "No enrolled courses found"
- */
-router.get("/user/enrolled-courses", getEnrolledCourses);
-/**
- * @swagger
- * /api/users/user/update:
- *   put:
- *     summary: Update the authenticated user's profile
- *     tags: [User]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               username:
- *                 type: string
- *               email:
- *                 type: string
- *             example:
- *               username: new_username
- *               email: new_email@example.com
- *     responses:
- *       200:
- *         description: User updated successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: User updated successfully
  *                 data:
  *                   type: object
  *                   properties:
@@ -311,21 +55,194 @@ router.get("/user/enrolled-courses", getEnrolledCourses);
  *                       $ref: '#/components/schemas/User'
  *       404:
  *         $ref: '#/components/responses/NotFound'
- *       500:
- *         $ref: '#/components/responses/InternalServerError'
  */
+
+router.get("/user", getUser);
+
+/**
+ * @swagger
+ * /api/users/user/enroll/{courseId}:
+ *   post:
+ *     summary: Enroll the authenticated user in a course.
+ *     tags:
+ *       - User
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: courseId
+ *         in: path
+ *         required: true
+ *         description: The ID of the course to enroll in.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successfully enrolled in the course.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Successfully enrolled in [Course Title]"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     course:
+ *                       $ref: '#/components/schemas/Course'
+ *       400:
+ *         description: Course ID missing or invalid.
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ */
+
+router.post("/user/enroll/:courseId", validateCourse, enrollCourse);
+
+/**
+ * @swagger
+ * /api/users/user/unenroll/{courseId}:
+ *   delete:
+ *     summary: Unenroll the authenticated user from a course.
+ *     tags:
+ *       - User
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: courseId
+ *         in: path
+ *         required: true
+ *         description: The ID of the course to unenroll from.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successfully unenrolled from the course.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Successfully unenrolled from [Course Title]"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     course:
+ *                       $ref: '#/components/schemas/Course'
+ *       400:
+ *         description: Course ID missing.
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ */
+
+//un enroll for course
+router.delete("/user/unenroll/:courseId", validateCourse, unEnrollCourse);
+
+/**
+ * @swagger
+ * /api/users/user/enrolled-courses:
+ *   get:
+ *     summary: Retrieve the list of courses the authenticated user is enrolled in.
+ *     tags:
+ *       - User
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Returns a list of enrolled courses.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 count:
+ *                   type: integer
+ *                   example: 2
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     courses:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Course'
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ */
+
+router.get("/user/enrolled-courses", getEnrolledCourses);
+
+/**
+ * @swagger
+ * /api/users/user/update:
+ *   put:
+ *     summary: Update the authenticated user's profile information.
+ *     description: >
+ *       Updates fields of the user profile except for the following restricted fields: "id", "role", and "password".
+ *     tags:
+ *       - User
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       description: User profile data to update.
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             example:
+ *               firstName: "John"
+ *               lastName: "Doe"
+ *               country: "USA"
+ *     responses:
+ *       200:
+ *         description: User updated successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "User updated successfully"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     updatedUser:
+ *                       $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Attempt to update restricted fields (id, role, or password).
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ */
+
 router.put("/user/update", updateUserValidation, updateUser);
 
 /**
  * @swagger
  * /api/users/user/change-password:
  *   patch:
- *     summary: Change the authenticated user's password
- *     tags: [User]
+ *     summary: Change the authenticated user's password.
+ *     tags:
+ *       - User
  *     security:
  *       - bearerAuth: []
  *     requestBody:
  *       required: true
+ *       description: Object containing the old password and new password.
  *       content:
  *         application/json:
  *           schema:
@@ -339,134 +256,167 @@ router.put("/user/update", updateUserValidation, updateUser);
  *               newPassword:
  *                 type: string
  *             example:
- *               oldPassword: old_password123
- *               newPassword: new_password123
+ *               oldPassword: "oldPass123"
+ *               newPassword: "newPass456"
  *     responses:
  *       200:
- *         description: Password changed successfully
+ *         description: Password changed successfully.
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 status:
+ *                 success:
  *                   type: boolean
  *                   example: true
  *                 message:
  *                   type: string
- *                   example: Password changed successfully
+ *                   example: "Password changed successfully"
  *       400:
- *         description: Validation error or old password incorrect
+ *         description: Validation errors, such as new password matching the old password.
  *       404:
  *         $ref: '#/components/responses/NotFound'
- *       500:
- *         $ref: '#/components/responses/InternalServerError'
  */
+
 router.patch("/user/change-password", updatePasswordValidation, changePassword);
 
 //Admins-------------------------------------->>>>>
 
 /**
  * @swagger
- * /api/users:
+ * tags:
+ *   - name: Admin
+ *     description: Admin management routes
+ */
+
+/**
+ * @swagger
+ * /api/users/:
  *   get:
- *     summary: Get all users (Admin only)
- *     tags: [User]
+ *     summary: Retrieve a paginated list of users (Admin only).
+ *     tags:
+ *       - Admin
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: username
+ *         schema:
+ *           type: string
+ *         description: Filter by username.
+ *       - in: query
+ *         name: email
+ *         schema:
+ *           type: string
+ *         description: Filter by email.
+ *       - in: query
+ *         name: role
+ *         schema:
+ *           type: string
+ *         description: Filter by role.
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search term applied to username, email, first name, last name, etc.
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number for pagination.
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Number of records per page.
+ *       - in: query
+ *         name: sortBy
+ *         schema:
+ *           type: string
+ *           default: "email"
+ *         description: Field to sort by.
+ *       - in: query
+ *         name: sortOrder
+ *         schema:
+ *           type: string
+ *           default: "asc"
+ *         description: Sort order; either "asc" or "desc".
+ *       - in: query
+ *         name: isDeactivated
+ *         schema:
+ *           type: string
+ *         description: Filter based on deactivation status (true/false).
  *     responses:
  *       200:
- *         description: Successfully retrieved all users
+ *         description: A paginated list of users.
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 status:
+ *                 success:
  *                   type: boolean
  *                   example: true
- *                 totalResult:
- *                   type: integer
- *                   example: 5
+ *                 message:
+ *                   type: string
+ *                   example: "Users retrieved successfully"
  *                 data:
  *                   type: object
  *                   properties:
+ *                     pagination:
+ *                       type: object
+ *                       properties:
+ *                         currentPage:
+ *                           type: integer
+ *                           example: 1
+ *                         limit:
+ *                           type: integer
+ *                           example: 10
+ *                         pageSize:
+ *                           type: integer
+ *                           example: 10
+ *                         totalPages:
+ *                           type: integer
+ *                           example: 3
+ *                     count:
+ *                       type: integer
+ *                       example: 30
  *                     users:
  *                       type: array
  *                       items:
- *                         type: object
- *                         properties:
- *                           _id:
- *                             type: string
- *                           email:
- *                             type: string
- *                           name:
- *                             type: string
- *                           role:
- *                             type: string
- *                           courses:
- *                             type: array
- *                             items:
- *                               type: object
- *       403:
- *         description: Forbidden - Only admin can access this route
+ *                         $ref: '#/components/schemas/User'
  *       404:
- *         description: No users found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "No users found"
- *       500:
- *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Internal server error"
+ *         $ref: '#/components/responses/NotFound'
  */
-router.get("/", authorize("admin"), getUsers);
+
+router.get("/", authorize("admin"), getUsersValidator, getUsers);
+
 /**
  * @swagger
  * /api/users/create:
  *   post:
- *     summary: Admin-only - Create a new user
- *     tags: [User]
+ *     summary: Create a new user (Admin only).
+ *     tags:
+ *       - Admin
  *     security:
  *       - bearerAuth: []
  *     requestBody:
  *       required: true
+ *       description: User data required to create a new user.
  *       content:
  *         application/json:
  *           schema:
- *             required:
- *               - username
- *               - email
- *               - password
  *             type: object
- *             properties:
- *               username:
- *                 type: string
- *               email:
- *                 type: string
- *               password:
- *                 type: string
- *               role:
- *                 type: string
  *             example:
- *               username: johndoe
- *               email: john@example.com
- *               password: secret123
- *               role: student
+ *               username: "newuser"
+ *               email: "newuser@example.com"
+ *               password: "pass123"
+ *               role: "user"
  *     responses:
  *       201:
- *         description: User registered successfully
+ *         description: User created successfully.
  *         content:
  *           application/json:
  *             schema:
@@ -474,26 +424,25 @@ router.get("/", authorize("admin"), getUsers);
  *               properties:
  *                 message:
  *                   type: string
- *                   example: User registered successfully
+ *                   example: "User created successfully"
  *                 data:
  *                   type: object
  *                   properties:
  *                     user:
  *                       $ref: '#/components/schemas/User'
  *       400:
- *         description: Missing required fields
- *       409:
- *         description: Conflict - User already exists
- *       500:
- *         $ref: '#/components/responses/InternalServerError'
+ *         description: Bad request, user creation failed.
  */
+
 router.post("/create", authorize("admin"), createUser);
+
 /**
  * @swagger
  * /api/users/user:
  *   delete:
- *     summary: Admin-only - Delete a user by ID or username
- *     tags: [User]
+ *     summary: Delete a user (Admin only) based on an identifier.
+ *     tags:
+ *       - Admin
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -501,20 +450,37 @@ router.post("/create", authorize("admin"), createUser);
  *         name: userId
  *         schema:
  *           type: string
- *         description: User ID to delete
+ *         description: The unique identifier of the user.
  *       - in: query
  *         name: username
  *         schema:
  *           type: string
- *         description: Username of the user to delete
+ *         description: The username of the user.
+ *       - in: query
+ *         name: email
+ *         schema:
+ *           type: string
+ *         description: The email of the user.
  *     responses:
- *       204:
- *         description: User deleted successfully (no content)
+ *       200:
+ *         description: User deleted successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "User deleted successfully"
+ *       400:
+ *         description: Bad request or deletion failed.
  *       404:
  *         $ref: '#/components/responses/NotFound'
- *       500:
- *         $ref: '#/components/responses/InternalServerError'
  */
+
 router.delete("/user", authorize("admin"), deleteUser);
 
 export default router;

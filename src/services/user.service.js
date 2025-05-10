@@ -2,6 +2,7 @@ import prisma from "../lib/prismaClient.js";
 import { logger } from "../config/winston.js";
 import { APIError } from "../utils/errorClass.js";
 import { comparePassword, hashPassword } from "../utils/bcrypt.js";
+import { isEnrolled } from "./course.service.js";
 
 const userLogger = logger.child({
   logIdentifier: "Auth Service",
@@ -84,21 +85,13 @@ export const getAllUsers_S = async (options) => {
 };
 
 export const enrollCourse_S = async (userId, courseId) => {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    include: {
-      enrolledCourses: {
-        select: { id: true },
-      },
-    },
-  });
-  if (!user) throw new APIError("User not found", 404);
+  const authorize = await isEnrolled(userId, courseId);
+  if (authorize.isOwner) {
+    userLogger.warn("Cannot enroll in your own course", { userId, courseId });
+    throw new APIError("Cannot enroll in your own course", 400);
+  }
 
-  const alreadyEnrolled = user.enrolledCourses.some(
-    (course) => course.id === courseId
-  );
-
-  if (alreadyEnrolled) {
+  if (authorize.isStudent) {
     userLogger.warn("Already enrolled in this course", { userId, courseId });
     throw new APIError("Already enrolled in this course", 400);
   }
@@ -147,13 +140,10 @@ export const unenrollCourse_S = async (userId, courseId) => {
     },
   });
   if (!user) throw new APIError("User not found", 404);
-  // console.log("user", user);
 
   const isEnrolled = user.enrolledCourses.some((course) => {
-    console.log("course", course, "course.id", course.id, "courseId", courseId);
     return course.id === courseId;
   });
-  console.log("isEnrolled", isEnrolled);
   if (!isEnrolled) {
     userLogger.warn("Not enrolled in this course", { userId, courseId });
     throw new APIError("Not enrolled in this course", 404);
@@ -197,6 +187,7 @@ export const getEnrolledCourses_S = async (userId) => {
         select: {
           id: true,
           title: true,
+          completed: true,
           instructors: {
             select: {
               id: true,
@@ -219,7 +210,7 @@ export const getEnrolledCourses_S = async (userId) => {
     count: user.enrolledCourses.length,
   });
 
-  return user;
+  return user.enrolledCourses;
 };
 
 export const updateUserInfo_S = async (userId, userData) => {
