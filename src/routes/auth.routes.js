@@ -25,13 +25,11 @@ const router = express.Router();
  *     description: Authentication and authorization routes
  */
 
-//TODO: docs required here
-router.post("/otp-code", registerValidation, verificationCode);
 /**
  * @swagger
- * /api/auth/register:
+ * /api/auth/otp-code:
  *   post:
- *     summary: Register a new user
+ *     summary: Send verification code to email
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -43,64 +41,63 @@ router.post("/otp-code", registerValidation, verificationCode);
  *               - username
  *               - email
  *               - password
+ *               - role
  *             properties:
  *               username:
  *                 type: string
- *                 description: The user's username
  *               email:
  *                 type: string
- *                 description: The user's email address
  *               password:
  *                 type: string
- *                 description: The user's password
+ *               role:
+ *                 type: string
+ *                 enum: [user, admin]
+ *     responses:
+ *       200:
+ *         description: Verification code sent to user's email
+ *       400:
+ *         description: Bad request
+ *       409:
+ *         description: User already exists
+ */
+//send verification code to email
+router.post("/otp-code", registerValidation, verificationCode);
+
+/**
+ * @swagger
+ * /api/auth/register:
+ *   post:
+ *     summary: Register a new user with activation token and code
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - activation_token
+ *               - activation_code
+ *             properties:
+ *               activation_token:
+ *                 type: string
+ *               activation_code:
+ *                 type: string
  *     responses:
  *       201:
  *         description: User registered successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   description: Success message
- *                 data:
- *                   type: object
- *                   properties:
- *                     user:
- *                       type: object
- *                       description: User data excluding password
- *                     token:
- *                       type: string
- *                       description: JWT token
  *       400:
- *         description: Bad Request
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   description: Error message
- *       409:
- *         description: Conflict (Username or email already exists)
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   description: Error message
+ *         description: Invalid activation code or token
  */
+
+// Route for user registration
 router.post("/register", verficationValidation, register);
 
 /**
  * @swagger
  * /api/auth/login:
  *   post:
- *     summary: Login a user
+ *     summary: Login user and receive access and refresh tokens
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -114,47 +111,32 @@ router.post("/register", verficationValidation, register);
  *             properties:
  *               email:
  *                 type: string
- *                 description: The user's email address
- *               username:
- *                 type: string
- *                 description: The user's username
  *               password:
  *                 type: string
- *                 description: The user's password
  *     responses:
  *       200:
- *         description: User logged in successfully, returns JWT token
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   description: Success message
- *                 data:
- *                   type: object
- *                   properties:
- *                     user:
- *                       type: object
- *                       description: User data excluding password
- *                     token:
- *                       type: string
- *                       description: JWT token
+ *         description: Login successful
  *       400:
- *         description: Bad Request
+ *         description: Bad request
  *       401:
- *         description: Invalid credentials
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   description: Error message
+ *         description: Unauthorized
  */
+
+// Route for user login
 router.post("/login", loginValidation, loginUser);
+
+/**
+ * @swagger
+ * /api/auth/refresh-token:
+ *   get:
+ *     summary: Refresh the access token using a valid refresh token
+ *     tags: [Auth]
+ *     responses:
+ *       200:
+ *         description: Access token refreshed
+ *       401:
+ *         description: Invalid or expired refresh token
+ */
 
 // Route for refreshing the access token
 router.get("/refresh-token", refreshTokenController);
@@ -163,7 +145,7 @@ router.get("/refresh-token", refreshTokenController);
  * @swagger
  * /api/auth/forgot-password:
  *   post:
- *     summary: Request a password reset link
+ *     summary: Send password reset link to user's email
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -176,63 +158,29 @@ router.get("/refresh-token", refreshTokenController);
  *             properties:
  *               email:
  *                 type: string
- *                 description: The user's email address
- *                 example: "user@example.com"
  *     responses:
  *       200:
- *         description: Password reset link sent to the user's email
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   description: Status of the request
- *                   example: true
- *                 message:
- *                   type: string
- *                   description: Success message
- *                   example: "Password reset link sent to user@example.com"
- *       400:
- *         description: Bad Request (Email not provided or invalid)
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   description: Status of the request
- *                   example: false
- *                 message:
- *                   type: string
- *                   description: Error message
- *                   example: "Email is required for password reset"
+ *         description: Password reset email sent
  *       404:
- *         description: User not found with this email
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   description: Status of the request
- *                   example: false
- *                 message:
- *                   type: string
- *                   description: Error message
- *                   example: "User not found with this email"
- * */
+ *         description: User not found
+ */
+
+// Route for sending a password reset link to the user's email
 router.post("/forgot-password", forgotPasswordValidation, forgotPassword);
 
 /**
  * @swagger
  * /api/auth/reset-password:
  *   post:
- *     summary: Reset the user's password
+ *     summary: Reset password using token from email
  *     tags: [Auth]
+ *     parameters:
+ *       - in: query
+ *         name: token
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Reset token from email
  *     requestBody:
  *       required: true
  *       content:
@@ -244,65 +192,17 @@ router.post("/forgot-password", forgotPasswordValidation, forgotPassword);
  *             properties:
  *               newPassword:
  *                 type: string
- *                 description: The new password to set for the user
- *                 example: "newSecurePassword123!"
- *     parameters:
- *       - in: query
- *         name: token
- *         required: true
- *         schema:
- *           type: string
- *         description: The password reset token from the URL query string
  *     responses:
  *       200:
- *         description: Password has been reset successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   description: Status of the reset operation
- *                   example: true
- *                 message:
- *                   type: string
- *                   description: Success message
- *                   example: "Password has been reset successfully"
+ *         description: Password reset successful
  *       400:
- *         description: Bad Request (Invalid or expired token, or newPassword not provided or New password cannot be the same as old password)
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   description: Status of the request
- *                   example: false
- *                 message:
- *                   type: string
- *                   description: Error message
- *                   example: "Invalid or expired token or New password cannot be the same as old password"
+ *         description: New password matches old one
  *       404:
- *         description: User not found with the decoded token
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   description: Status of the request
- *                   example: false
- *                 message:
- *                   type: string
- *                   description: Error message
- *                   example: "User not found with the token"
+ *         description: User not found
  */
-router.post("/reset-password", resetPasswordValidation, resetPassword);
 
-// router.get("/reset-password", resetPasswordGet);
+// Route for resetting the password using the token sent to the user's email
+router.post("/reset-password", resetPasswordValidation, resetPassword);
 
 export default router;
 

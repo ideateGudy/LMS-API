@@ -4,10 +4,10 @@ import { APIError } from "../utils/errorClass.js";
 import { hashPassword, comparePassword } from "../utils/bcrypt.js";
 import { generateOTP } from "../utils/otp.js";
 import jwt from "jsonwebtoken";
-// import { sendOTP } from "../utils/sendMail.js";
 import { generateAccessToken, generateRefreshToken } from "../utils/jwt.js";
 import { sendActivationCodeTemplate } from "../utils/emailTemplates.js";
 import { sendEmail } from "../utils/sendEmail.js";
+import { sendMail } from "../utils/sendMail.js";
 
 const authLogger = logger.child({
   logIdentifier: "Auth Service",
@@ -93,17 +93,20 @@ export const sendVerificationCode = async (userData) => {
   const activationToken = createActivationToken(userData);
   const activationCode = activationToken.activationCode;
 
-  //send email
-  // await sendOTP(userData.email, activationCode);
-  const { error } = await sendEmail({
+  //send email test with resend
+  // const { error } = await sendEmail({
+  //   to: userData.email,
+  //   ...sendActivationCodeTemplate(activationCode),
+  // });
+
+  const { rejected } = await sendMail({
     to: userData.email,
     ...sendActivationCodeTemplate(activationCode),
   });
 
-  if (error) {
-    authLogger.error("Error sending password reset email", error);
-    console.error("Error sending password reset email", error);
-    throw new APIError("Error sending password reset email", 500);
+  if (rejected.length > 0) {
+    authLogger.error("Error sending activation code", rejected);
+    throw new APIError("Error sending activation code", 500);
   }
 
   authLogger.info("Email sent successfully", {

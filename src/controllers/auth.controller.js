@@ -26,11 +26,20 @@ import { cookieExpires10days, thirtyDaysFromNow } from "../utils/date.js";
 import { comparePassword, hashPassword } from "../utils/bcrypt.js";
 import { sendEmail } from "../utils/sendEmail.js";
 import { getPasswordResetTemplate } from "../utils/emailTemplates.js";
+import { sendMail } from "../utils/sendMail.js";
 
 //Verify User Email
 export const verificationCode = catchAsync(async (req, res) => {
   const userData = req.body;
+  if (!userData) {
+    authLogger.warn("Request body cannot be empty");
+    throw new APIError("Request body cannot be empty", 400);
+  }
 
+  // if (userData.role === "admin") {
+  //   authLogger.warn("Admin cannot create account from this route");
+  //   throw new APIError("Admin cannot create account from this route", 400);
+  // }
   const token = await sendVerificationCode(userData);
 
   res.status(200).json({
@@ -49,6 +58,16 @@ export const register = catchAsync(async (req, res) => {
 
   if (newUser.activationCode !== activation_code)
     throw new APIError("Invalid activation code", 400);
+
+  const now = Math.floor(Date.now() / 1000);
+  if (newUser.exp < now) throw new APIError("Activation code expired", 400);
+  if (!newUser.user) throw new APIError("Invalid activation token", 400);
+
+  //admin cannot create account from this route
+  // if (newUser.user.role === "admin") {
+  //   authLogger.warn("Admin cannot create account from this route");
+  //   throw new APIError("Admin cannot create account from this route", 400);
+  // }
 
   const userData = newUser.user;
 
@@ -88,6 +107,10 @@ export const register = catchAsync(async (req, res) => {
 
 export const loginUser = catchAsync(async (req, res) => {
   const userData = req.body;
+  if (!userData) {
+    authLogger.warn("Request body cannot be empty");
+    throw new APIError("Request body cannot be empty", 400);
+  }
   const user = await authUser_S(userData);
 
   const audience = getJwtAudience(user.role);
@@ -149,18 +172,29 @@ export const forgotPassword = catchAsync(async (req, res) => {
 
   const token = generateEmailToken(user);
 
-  const resetUrl =
-    process.env.NODE_ENV === "production"
-      ? `${APP_ORIGIN_PROD}/api/auth/reset-password?token=${token}`
-      : `${APP_ORIGIN_DEV}/api/auth/reset-password?token=${token}`;
+  // const resetUrl =
+  //   process.env.NODE_ENV === "production"
+  //     ? `${APP_ORIGIN_PROD}/api/auth/reset-password?token=${token}`
+  //     : `${APP_ORIGIN_DEV}/api/auth/reset-password?token=${token}`;
 
-  const { error } = await sendEmail({
+  //send the 2 urls to the user
+  const resetUrl = {
+    prod: `${APP_ORIGIN_PROD}/api/auth/reset-password?token=${token}`,
+    dev: `${APP_ORIGIN_DEV}/api/auth/reset-password?token=${token}`,
+  };
+
+  //testing with resend
+  // const { error } = await sendEmail({
+  //   to: user.email,
+  //   ...getPasswordResetTemplate(resetUrl),
+  // });
+  const { rejected } = await sendMail({
     to: user.email,
     ...getPasswordResetTemplate(resetUrl),
   });
 
-  if (error) {
-    authLogger.error("Error sending password reset email", error);
+  if (rejected.length > 0) {
+    authLogger.error("Error sending password reset email", rejected);
     throw new APIError("Error sending password reset email", 500);
   }
 
@@ -175,8 +209,8 @@ export const forgotPassword = catchAsync(async (req, res) => {
 });
 
 export const resetPassword = catchAsync(async (req, res) => {
-  const { newPassword, token } = req.body;
-  // const token = req.query.token;
+  const { newPassword } = req.body;
+  const token = req.query.token;
 
   const decoded = jwt.verify(token, process.env.EMAIL_JWT_SECRET);
   const user = await prisma.user.findUnique({
@@ -196,7 +230,7 @@ export const resetPassword = catchAsync(async (req, res) => {
   await prisma.user.update({
     where: { id: user.id },
     data: {
-      newPassword: hashedPassword,
+      password: hashedPassword,
     },
   });
 
