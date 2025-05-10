@@ -3,7 +3,6 @@ node_modules
 prisma/generated
 note.md
 logs
-prisma/migrations
 swaggertemp.js
 
 
