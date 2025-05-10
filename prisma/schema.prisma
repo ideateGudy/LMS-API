@@ -7,7 +7,7 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
+  output   = "./generated/prisma"
 }
 
 datasource db {
@@ -21,21 +21,39 @@ enum Role {
   admin
 }
 
-enum SubmissionMode {
-  link
-  file
+enum SkillLevel {
+  Beginner
+  Intermediate
+  Advanced
 }
+
+
 
 enum SubmissionStatus {
   Pending
   Progress
   Done
+  Graded
 }
 
-enum SkillLevel {
-  Beginner
-  Intermediate
-  Advanced
+enum ReviewedSubmissionStatus {
+  Pending
+  Accepted
+  Rejected
+}
+
+enum AssignmentStatus {
+  Active
+  Reviewing
+  Reviewed
+  Completed
+  Upcoming  
+}
+
+enum SessionStatus {
+  NotStarted
+  Started
+  Done
 }
 
 model User {
@@ -90,6 +108,7 @@ model User {
   @@map("users")
   @@index([email], name: "idx_user_email")
   @@index([username], name: "idx_user_name")
+
 }
 
 model Session {
@@ -103,6 +122,8 @@ model Session {
 
   @@map("sessions")
   @@index([userId], name: "idx_userId")
+  @@index([expiresAt], name: "idx_expiresAt")
+
 }
 
 model Course {
@@ -138,10 +159,12 @@ model Course {
   discussions             Discussion[]
   assignments             Assignment[]
   progress                CourseProgress[]
+  liveSessions            LiveSession[]
 
   @@map("courses")
   @@index([title], name: "idx_course_title")
   @@index([category], name: "idx_course_category")
+  
 }
 
 model Module {
@@ -164,7 +187,9 @@ model Module {
   assignments        Assignment[]
   discussions        Discussion[]
 
+
   @@map("modules")
+  @@index([courseId], name: "idx_courseId")
 }
 
 model Lesson {
@@ -185,7 +210,9 @@ model Lesson {
   assignments Assignment[]
   comments    Comment[]
 
+
   @@map("lessons")
+  @@index([moduleId], name: "idx_moduleId")
 }
 
 model CourseProgress {
@@ -198,7 +225,10 @@ model CourseProgress {
   course    Course   @relation(fields: [courseId], references: [id])
   courseId  String
 
+  @@unique([userId, courseId])
   @@map("course_progress")
+  @@index([userId], name: "idx_userId")
+  @@index([courseId], name: "idx_courseId")
 
 }
 
@@ -214,8 +244,13 @@ model ModuleProgress {
 
 
   @@map("module_progress")
+  @@unique([userId, moduleId])
+  @@index([userId], name: "idx_userId")
+  @@index([moduleId], name: "idx_moduleId")
 
 }
+
+
 
 model Assignment {
   id          String     @id @default(uuid())
@@ -223,7 +258,8 @@ model Assignment {
   task        String
   startDate   DateTime
   dueDate     DateTime
-  mode        SubmissionMode
+  status      AssignmentStatus @default(Upcoming)
+  
 
   // Relations
   course      Course?    @relation(fields: [courseId], references: [id])
@@ -233,16 +269,69 @@ model Assignment {
   lesson      Lesson?    @relation(fields: [lessonId], references: [id])
   lessonId    String?
   submissions AssignmentSubmission[]
+  isLiveSession  Boolean    @default(false)
+  liveSession     LiveSession?  @relation(fields: [liveSessionId], references: [id])
+  liveSessionId   String?
 
   @@map("assignments")
+  @@unique([courseId, moduleId, lessonId])
+  @@unique([courseId, moduleId])
+  @@index([courseId], name: "idx_courseId")
+  @@index([moduleId], name: "idx_moduleId")
+  @@index([lessonId], name: "idx_lessonId")
+  @@index([liveSessionId], name: "idx_liveSessionId")
 }
+
+
+model LiveSession {
+  id          String     @id @default(uuid())
+  topic       String
+  description String
+  course      Course?    @relation(fields: [courseId], references: [id])
+  courseId    String?
+  startDate   DateTime
+  duration    Int
+  meetingUrl     String
+  createdBy   String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  status      SessionStatus @default(NotStarted)
+
+
+  //Relations
+  assignments     Assignment[]
+
+  @@map("live_sessions")
+}
+
 
 model AssignmentSubmission {
   id            String           @id @default(uuid())
-  content       String
-  status        SubmissionStatus @default(Pending)
+
+  // User fields
+  content       String? // Text content of the submission
+  linkUrl       String?
+  fileUrl       String?
+  fileName      String?
+  fileSize      Int?
+  fileType      String?
+  status        SubmissionStatus @default(Pending) // For User
+
+  // Instructor fields
+  graded       Boolean         @default(false)
   grade         Int?
-  createdAt     DateTime         @default(now())
+  gradedAt      DateTime?
+  reviewed      Boolean         @default(false) //Check if the submission is graded or reviewStatus is Accepted or Rejected
+  reviewedStatus ReviewedSubmissionStatus? // For Instructor
+  reviewedAt    DateTime?
+  reviewedBy    String? // Instructor ID
+  reviewFeedbackMessage String? // Feedback message from instructor
+  rejectedAt    DateTime? 
+
+  // Other fields
+  submittedAt   DateTime        @default(now())
+  updatedAt     DateTime         @updatedAt
 
   // Relations
   assignment    Assignment       @relation(fields: [assignmentId], references: [id])
@@ -251,6 +340,9 @@ model AssignmentSubmission {
   studentId     String
 
   @@map("assignment_submissions")
+  @@unique([assignmentId, studentId])
+  @@index([assignmentId], name: "idx_assignmentId")
+  @@index([studentId], name: "idx_studentId")
 }
 
 model Comment {
@@ -266,7 +358,11 @@ model Comment {
   discussionId String?
   replies      Reply[]
 
+
   @@map("comments")
+  @@index([lessonId], name: "idx_lessonId")
+  @@index([discussionId], name: "idx_discussionId")
+  @@index([authorId], name: "idx_authorId")
 }
 
 model Reply {

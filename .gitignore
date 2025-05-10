@@ -1,8 +1,9 @@
 node_modules
 .env
-generated/prisma/
+prisma/generated
 note.md
 logs
 prisma/migrations
+swaggertemp.js
 
 

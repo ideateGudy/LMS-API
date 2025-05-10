@@ -3,6 +3,7 @@ import { APIError } from "../utils/errorClass.js";
 import jwt from "jsonwebtoken";
 import { isCelebrateError } from "celebrate";
 import { clearAuthCookies, REFRESH_PATH } from "../utils/setCookie.js";
+import multer from "multer";
 
 const errorHandlerLogger = logger.child({
   logIdentifier: "Global Error Handler Middleware",
@@ -44,6 +45,14 @@ export const globalErrorHandler = (err, req, res, next) => {
     return res.status(err.statusCode || 500).json({
       success: false,
       message: err.message,
+    });
+  }
+
+  if (err instanceof multer.MulterError) {
+    // Handle specific MulterError
+    return res.status(400).json({
+      error: err.message || "File upload failed",
+      field: err.field,
     });
   }
 

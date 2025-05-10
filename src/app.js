@@ -21,10 +21,19 @@ const app = express();
 import authRouter from "./routes/auth.routes.js";
 import userRouter from "./routes/user.routes.js";
 import courseRouter from "./routes/course.routes.js";
-// import progressRouter from "./modules/progress/progress.routes.js";
+import progressRouter from "./routes/progress.routes.js";
+import assignmentRouter from "./routes/assignment.routes.js";
 
 //Middlewares
-app.use(cors());
+const corsOptions = {
+  origin: [
+    process.env.APP_ORIGIN_DEV, // For development
+    process.env.APP_ORIGIN_PROD, // For production
+  ],
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -37,7 +46,8 @@ app.use(morganMiddleware);
 app.use("/api/auth", authRouter);
 app.use("/api/users", authenticateUser, userRouter);
 app.use("/api/courses", courseRouter);
-// app.use("/api/progress", authenticateUser, progressRouter);
+app.use("/api/progress", authenticateUser, progressRouter);
+app.use("/api/assignments", authenticateUser, assignmentRouter);
 
 app.get("/", (_req, res) => {
   res.send("Welcome to the Dive Africa LMS API 🎓");

@@ -69,7 +69,8 @@ export const getPasswordResetTemplate = (url) => ({
       <p>Hello,</p>
       <p>We received a request to reset your password for your Dive Africa LMS account.</p>
       <p>If you made this request, click the button below to reset your password:</p>
-      <p><a href="${url}" class="button">Reset Password</a></p>
+      <p><a href="${url.prod}" class="button">Reset Password(Prod)</a></p>
+      <p><a href="${url.dev}" class="button">Reset Password(Dev)</a></p>
       <p style="background-color: #5763AE; color: #FFF;">This link expires in 5 minutes</p>
       <p>If you didn’t request this, you can safely ignore this email. Your password will remain unchanged.</p>
       <p>Thank you,<br>The Dive Africa Team</p>
