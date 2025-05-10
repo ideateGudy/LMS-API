@@ -1,7 +1,6 @@
 import prisma from "../lib/prismaClient.js";
 import { logger } from "../config/winston.js";
 import { APIError } from "../utils/errorClass.js";
-import e from "express";
 
 const progressLogger = logger.child({
   logIdentifier: "Progress Controller",
@@ -92,7 +91,6 @@ const updateModuleProgress = async (userId, moduleId) => {
 // Update lesson completion and recalculate related progress
 const updateLessonCompletion = async (userId, lessonId, completed) => {
   // Get the related module and course IDs
-  console.log("lessonId, userid, completed", lessonId, userId, completed);
   const lesson = await prisma.lesson.findUnique({
     where: { id: lessonId },
     select: {
