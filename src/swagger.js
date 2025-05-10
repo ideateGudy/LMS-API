@@ -13,6 +13,7 @@ const __dirname = path.dirname(__filename);
  *       type: http
  *       scheme: bearer
  *       bearerFormat: JWT
+ *
  *   schemas:
  *     User:
  *       type: object
@@ -21,7 +22,7 @@ const __dirname = path.dirname(__filename);
  *         - email
  *         - password
  *       properties:
- *         _id:
+ *         id:
  *           type: string
  *           description: Unique identifier for the user
  *         username:
@@ -45,7 +46,7 @@ const __dirname = path.dirname(__filename);
  *         createdBy:
  *           type: string
  *           description: User ID of the creator
- *           default: null
+ *           nullable: true
  *         createdAt:
  *           type: string
  *           format: date-time
@@ -57,26 +58,66 @@ const __dirname = path.dirname(__filename);
  *       type: object
  *       required:
  *         - title
- *         - createdBy
+ *         - description
+ *         - category
+ *         - skillLevel
+ *         - topic
+ *         - language
+ *         - level
+ *         - duration
+ *         - meterial
+ *         - promoVideo
+ *         - targetAudience
+ *         - curriculum
+ *         - welcomeMessage
+ *         - congratulationsMessage
+ *         - modules
  *       properties:
- *         _id:
+ *         id:
  *           type: string
+ *           description: Unique identifier for the course
  *         title:
  *           type: string
+ *           description: Course title
  *         description:
  *           type: string
+ *           description: Course description
  *         category:
  *           type: string
+ *           description: Course category
  *         skillLevel:
  *           type: string
  *           enum: [Beginner, Intermediate, Advanced]
- *         duration:
+ *           description: Difficulty level
+ *         topic:
  *           type: string
- *           default: 1 hour
- *         prerequisites:
- *           type: array
+ *           description: Course topic
+ *         duration:
+ *           type: integer
+ *           description: Estimated duration
+ *         material:
+ *           type: string
+ *           description: Course material
+ *         promoVideo:
+ *           type: string
+ *           description: Promotional video URL
+ *         targetAudience:
+ *           type: string
+ *           description: Target audience
+ *         requirements:
+ *           type: string
  *           items:
  *             type: string
+ *           description: List of prerequisite topics
+ *         curriculum:
+ *           type: string
+ *           description: Course curriculum
+ *         welcomeMessage:
+ *           type: string
+ *           description: Welcome message for students
+ *         congratulationsMessage:
+ *           type: string
+ *           description: Congratulations message for course completion
  *         createdBy:
  *           type: string
  *           description: User ID of the course creator
@@ -84,6 +125,7 @@ const __dirname = path.dirname(__filename);
  *           type: array
  *           items:
  *             type: string
+ *             description: User IDs of enrolled students
  *         createdAt:
  *           type: string
  *           format: date-time
@@ -91,34 +133,115 @@ const __dirname = path.dirname(__filename);
  *           type: string
  *           format: date-time
  *
- *     Progress:
+ *     Module:
+ *       type: object
+ *       required:
+ *         - title
+ *         - description
+ *         - moduleNumber
+ *         - duration
+ *         - material
+ *         - promoVideo
+ *         - courseId
+ *         - lessons
+ *       properties:
+ *        id:
+ *          type: string
+ *          description: Unique identifier for the module
+ *        title:
+ *          type: string
+ *        description: Module title
+ *        moduleNumber:
+ *          type: integer
+ *          description: Module number
+ *        duration:
+ *          type: string
+ *          description: Estimated duration
+ *        material:
+ *          type: string
+ *          description: Module material
+ *        promoVideo:
+ *          type: string
+ *          description: Promotional video URL
+ *
+ *     Lessons:
+ *       type: object
+ *       required:
+ *         - title
+ *         - description
+ *         - videoUrl
+ *         - lessonNumber
+ *         - duration
+ *         - material
+ *         - moduleId
+ *       properties:
+ *        id:
+ *          type: string
+ *          description: Unique identifier for the lesson
+ *        title:
+ *          type: string
+ *          description: Lesson title
+ *        lessonNumber:
+ *          type: integer
+ *          description: Lesson number
+ *        duration:
+ *          type: string
+ *          description: Estimated duration
+ *        material:
+ *          type: string
+ *          description: Lesson material
+ *        videoUrl:
+ *          type: string
+ *          description: Video URL
+ *        moduleId:
+ *          type: string
+ *          description: Module ID
+ *        createdAt:
+ *          type: string
+ *          format: date-time
+ *        updatedAt:
+ *          type: string
+ *          format: date-time
+ *
+ *
+ *     CourseProgress:
  *       type: object
  *       required:
  *         - student
  *         - course
  *       properties:
- *         _id:
+ *         id:
  *           type: string
+ *           description: Unique identifier for the progress record
  *         student:
  *           type: string
  *           description: User ID of the student
  *         course:
  *           type: string
  *           description: Course ID
- *         percentage:
- *           type: number
- *           minimum: 0
- *           maximum: 100
- *           default: 0
- *         lastUpdated:
+ *         progress:
+ *           type: integer
+ *           description: Progress percentage (0-100)
+ *
+ *     ModuleProgress:
+ *       type: object
+ *       required:
+ *         - student
+ *         - module
+ *       properties:
+ *         id:
  *           type: string
- *           format: date-time
- *         createdAt:
+ *           description: Unique identifier for the progress record
+ *         student:
  *           type: string
- *           format: date-time
- *         updatedAt:
+ *           description: User ID of the student
+ *         module:
  *           type: string
- *           format: date-time
+ *           description: Module ID
+ *         progress:
+ *           type: integer
+ *           description: Progress percentage (0-100)
+ *
  *   responses:
  *     NotFound:
  *       description: Resource not found
@@ -133,6 +256,7 @@ const __dirname = path.dirname(__filename);
  *               message:
  *                 type: string
  *                 example: User not found
+ *
  *     InternalServerError:
  *       description: Internal server error
  *       content:
@@ -168,7 +292,7 @@ const options = {
     ],
   },
   apis: [
-    path.join(__dirname, "./modules/**/*.js"),
+    path.join(__dirname, "./**/*.js"),
     path.join(__dirname, "./swagger.js"),
   ],
 };
