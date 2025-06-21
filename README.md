@@ -15,7 +15,7 @@ This is a modern, Learning Management System (LMS) built to empower students and
 | Backend  | Node.js, Express   |
 | Database | MongoDB + Mongoose |
 | Auth     | JWT, Bcrypt        |
-| Logging  | Winston            |
+| Logging  | Winston + Morgan   |
 
 ---
 
